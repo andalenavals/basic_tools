@@ -27,6 +27,7 @@ def load_explist(args):
         print('WARNING: Not exposure list')
     return exps
 
+#Version for V10 psf catalog
 def read_alldata(args):
     import fitsio
     import numpy as np
@@ -73,6 +74,40 @@ def read_alldata(args):
 
     return all_data_final
 
+#Version for V23 psf catalog
+def read_alldata2(args):
+    import fitsio
+    import numpy as np
+
+    inpath = os.path.expanduser(args.inpath)
+    if not os.path.exists(inpath):
+        print('The path of the catalog does not exist!')
+        return None
+    
+    exps = load_explist(args) 
+
+    keys = args.fields
+    
+    all_data = { key : [] for key in keys }
+    all_keys = keys
+
+    for exp in exps:
+        #print('Start work on exp = ',exp)
+        expnum = int(exp)
+        #print('expnum = ',expnum)
+        indir = os.path.join(inpath, exp)
+        try:
+            expinfo = fitsio.read(os.path.join(indir, 'exp_psf_cat_%d.fits'%expnum))
+        except (OSError, IOError):
+            print('Unable to open exp_psf_cat %s.  Skipping this file.'%expinfo) 
+        for key in all_keys:
+            all_data[key].append(expoinfo[key])
+
+    all_data_final = { key : [] for key in keys }         
+    for key in all_keys:
+        all_data_final[key] = np.concatenate(all_data[key])         
+
+    return all_data_final
 def plotRaDecRoot(data,  name):
     from ROOT import TCanvas, TGraph,  TH2F,  TH2,  TH1
     from ROOT import gROOT, gSystem,  Double
