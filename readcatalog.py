@@ -175,14 +175,14 @@ def plotSkymapRoot(data,  name):
 def plotRaDec(data,  name): 
     import pylab as pl
     import numpy as np
-    #pl.figure(figsize=(5, 4) , dpi=128 )
-    pl.figure()
+    #pl.figure()
     pl.plot( data['ra'],data['dec'], 'ko', markersize=0.05 )
     pl.xlabel('RA')
     pl.ylabel('DEC')
     pl.legend()
     pl.grid()
-    pl.show()
+    pl.savefig(name, dpi=150)
+    #pl.show()
 
 def plotSkymap(data,  name):
     import pylab as pl
@@ -195,7 +195,7 @@ def plotSkymap(data,  name):
     ra = coords.ra.radian
     dec = coords.dec.radian
     
-    pl.figure()
+    #pl.figure()
     pl.subplot(111, projection="aitoff")
     #pl.subplot(111, projection="lambert")
     # Make sure to bin the regions, otherwise Memory errors appear.
@@ -209,7 +209,8 @@ def plotSkymap(data,  name):
     pl.ylabel('DEC')
     pl.legend()
     pl.grid()
-    pl.show()
+    pl.savefig(name, dpi=150)
+    #pl.show()
 
     
 def main():
