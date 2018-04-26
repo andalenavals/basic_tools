@@ -1,5 +1,5 @@
 # basic_tools
-Miscelaneous set of basic toolS, useful in data analysis, focused in cosmology.
+Miscelaneous set of basic tools, useful in data analysis, focused in cosmology.
 All the scripts have the usuals --help and -h flags, if you want more detailed information.
 
 1) split.py
@@ -8,4 +8,6 @@ of rows of all the generated files is 1. It redistribuite the residue over all t
 rows.
   HOW TO RUN
   $ python spliy.py --file=zone.riz --parts=7
+  
+2) fitinfo.py
   
