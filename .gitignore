@@ -1,0 +1,19 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Images and data files
+*.fits
+*.fz
+*.txt
+*.png
+*.riz
+
+# Distribution / packaging
+.Python
+build/
+/site
+
+# mypy
+.mypy_cache/
