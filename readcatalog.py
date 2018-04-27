@@ -98,7 +98,7 @@ def read_alldata2(args):
         indir = os.path.join(inpath, exp)
         try:
             expinfo = fitsio.read(os.path.join(indir, 'exp_psf_cat_%d.fits'%expnum))
-            print('File exp_psf_cat %d.  sucessfully read'%expnum) 
+            # print('File exp_psf_cat %d.  sucessfully read'%expnum) 
         except (OSError, IOError):
             print('Unable to open exp_psf_cat %s.  Skipping this file.'%expinfo) 
         for key in all_keys:
@@ -177,10 +177,16 @@ def plotRaDec(data,  name):
     import matplotlib 
     matplotlib.use('Agg')
     import matplotlib.pylab as pl
-    import numpy as np
+    from astropy.coordinates import SkyCoord
+    from astropy import units
+
     #pl.figure()
-    pl.plot( data['ra'],data['dec'], 'ko', markersize=1 )
-    pl.xlabel('RA')
+    coords = SkyCoord(ra=data['ra'], dec=data['dec'], unit='degree')
+    ra = coords.ra.wrap_at(180 * units.deg).radian
+    #ra = coords.ra.radian
+    dec = coords.dec.radian
+    pl.plot( ra, dec, 'ko', markersize=1 )
+    pl.xlabel('R.A')
     pl.ylabel('DEC')
     pl.legend()
     pl.grid()
@@ -191,13 +197,12 @@ def plotSkymap(data,  name):
     import matplotlib 
     matplotlib.use('Agg')
     import matplotlib.pylab as pl
-    import math
     from astropy.coordinates import SkyCoord
     from astropy import units
 
     coords = SkyCoord(ra=data['ra'], dec=data['dec'], unit='degree')
-    #ra = coords.ra.wrap_at(180 * units.deg).radian
-    ra = coords.ra.radian
+    ra = coords.ra.wrap_at(180 * units.deg).radian
+    #ra = coords.ra.radian
     dec = coords.dec.radian
     
     #pl.figure()
@@ -232,6 +237,7 @@ def main():
     plotRaDec(data,  args.outname)
     #plotSkymapRoot(data,  args.outname)
     #plotSkymap(data,  args.outname)
-
+    print('plot succesfully done')
+    
 if __name__ == "__main__":
     main()
