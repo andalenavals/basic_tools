@@ -6,6 +6,7 @@ All the scripts have the usuals --help and -h flags, if you want more detailed i
 This program divides files in sets of rows, then it generates output files for each set. The maximum difference between the number
 of rows of all the generated files is 1. It redistribuite the residue over all the sets without changing the order of the original
 rows.
+  
   HOW TO RUN
     
     $ python spliy.py --file=zone.riz --parts=7
@@ -13,7 +14,9 @@ rows.
   
 2) fitinfo.py
 This program reads fits files. 
+  
   HOWTO RUN 
+  
   If you want to know the basic informaion inside the file do
     
     $ python fitinfo.py --file=myfile.fits
