@@ -58,7 +58,7 @@ def main():
             print('Reading columns information of the HDU', nhdu,'\n', repr(hdu[nhdu].columns))
         except:
             print ('The',  type(hdu[nhdu]),'of the HDU',nhdu, 'does not have columns, probably it is a image instead a table')
-    if (args.hdu and args.alldata ):
+    if (args.hdu and args.alldata and not args.fields ):
         try:
              data =  hdu[nhdu].data
         except:
