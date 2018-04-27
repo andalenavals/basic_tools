@@ -98,10 +98,11 @@ def read_alldata2(args):
         indir = os.path.join(inpath, exp)
         try:
             expinfo = fitsio.read(os.path.join(indir, 'exp_psf_cat_%d.fits'%expnum))
+            print('File exp_psf_cat %d.  sucessfully read'%expnum) 
         except (OSError, IOError):
             print('Unable to open exp_psf_cat %s.  Skipping this file.'%expinfo) 
         for key in all_keys:
-            all_data[key].append(expoinfo[key])
+            all_data[key].append(expinfo[key])
 
     all_data_final = { key : [] for key in keys }         
     for key in all_keys:
@@ -173,10 +174,12 @@ def plotSkymapRoot(data,  name):
     c1.Print(name)
     
 def plotRaDec(data,  name): 
-    import pylab as pl
+    import matplotlib 
+    matplotlib.use('Agg')
+    import matplotlib.pylab as pl
     import numpy as np
     #pl.figure()
-    pl.plot( data['ra'],data['dec'], 'ko', markersize=0.05 )
+    pl.plot( data['ra'],data['dec'], 'ko', markersize=1 )
     pl.xlabel('RA')
     pl.ylabel('DEC')
     pl.legend()
@@ -185,7 +188,9 @@ def plotRaDec(data,  name):
     #pl.show()
 
 def plotSkymap(data,  name):
-    import pylab as pl
+    import matplotlib 
+    matplotlib.use('Agg')
+    import matplotlib.pylab as pl
     import math
     from astropy.coordinates import SkyCoord
     from astropy import units
@@ -220,10 +225,9 @@ def main():
     import pandas
     args = parse_args()
 
-    data =  read_alldata(args)
-    df = pandas.DataFrame(data)
-    #print(np.min(data['ra']),  ' ', np.max(data['ra']),  ' ', np.min(data['dec']),  ' ', np.max(data['dec']) )
-
+    data =  read_alldata2(args)
+    #df = pandas.DataFrame(data)
+    print('Data was read succesfully')
     #plotRaDecRoot(data,  args.outname)
     plotRaDec(data,  args.outname)
     #plotSkymapRoot(data,  args.outname)
