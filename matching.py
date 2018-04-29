@@ -1,8 +1,6 @@
 import os
 import pandas 
 
-D2D = 0.5
-
 def parse_args():
     import argparse
     from astropy import units as u
@@ -14,6 +12,8 @@ def parse_args():
                         help='File of reference, this file have information to be added to the analysis file ')
     parser.add_argument('--filename', default='out.fits',
                         help='Name for the output file ')
+    parser.add_argument('--d2d', default='', type=float, 
+                        help='Maximum angular separation to be accept as a rigth match (in units of degree) ')
     #parser.add_argument('--unit', default= , type=u, 
     #                    help='RA and DEC units in the files and for the angular separation (u.degre) ')
     parser.add_argument('--fields', nargs='+',  type=str, 
@@ -54,6 +54,7 @@ def match_objects(df1, df2,  names,  args):
     from astropy.coordinates import SkyCoord
     from astropy import units as u
     import numpy as np
+    import pandas as p
 
     c = SkyCoord(ra=list(df1[names[0]])* u.degree, dec=list(df1[names[1]])*u.degree)  
     catalog = SkyCoord(ra=list(df2[names[2]])*u.degree, dec=list(df2[names[3]])*u.degree)
@@ -61,16 +62,17 @@ def match_objects(df1, df2,  names,  args):
     matches = catalog[idx]
 
     df2 =  df2.reindex(index=idx)
-    
+    #now df2 starts with the rows having the information of the match
+    # and nothing about the other rows of df2
     if (len(matches)== len(df1)):
         df1['d2d'] = list(d2d.degree)
         #df1['cmt'] =  list(df2.loc[df2.index.isin(idx) , 'CM_T' ])
         newcols = {}
         for name in args.fields:
             newcols[name] =  list(df2.loc[df2.index.isin(idx) , name ])
-        print (newcols[0])
-        #df1 =  df1.assign( newcols )
-    print (df1)
+            df1[name] = p.Series(newcols[name],  index = df1.index )
+            boolean =  ( df1['d2d'] >  args.d2d )
+            df1.loc[boolean, name] = None
     return df1
        
 def match_objects_test1(df1, df2):
@@ -106,7 +108,6 @@ def match_objects_test1(df1, df2):
     print('\n Final data 1: \n')
     PrettyPrint(out_data)    
     #np.savetxt('out_data.txt', out_data, fmt='%f')
-
 def match_objects_test2(arg1, arg2):
     import numpy as np
     from astropy.coordinates import SkyCoord
@@ -139,13 +140,13 @@ def match_objects_test2(arg1, arg2):
 
     print('\n Final data 1: \n', df1)
     
-
-    #for i in range (0, len(matches)):
-        #    out_data['d2d'][i] = d2d.degree[i]
-        #    out_data['ext_mof'][i] =  dat2['EXT_MOF'][idx[i]]
-    #np.savetxt('out_data.txt', df1, fmt='%f')
-    #fitsio.write('outdatas.fits', df1.to_records(index=False), clobber=True)
-    
+    '''
+    for i in range (0, len(matches)):
+        out_data['d2d'][i] = d2d.degree[i]
+        out_data['ext_mof'][i] =  dat2['EXT_MOF'][idx[i]]
+    np.savetxt('out_data.txt', df1, fmt='%f')
+    fitsio.write('outdatas.fits', df1.to_records(index=False), clobber=True)
+    '''
 
 def PrettyPrint(data):
     from prettytable import PrettyTable
@@ -164,21 +165,19 @@ def write_fit(data, file_name):
     #fitsio.write(file_name, data, clobber=True)
     
 def main():
-    #hdu1=  fits.open(args.file)
-    #hdu2 =  fits.open(args.fileref)
-    #data1 = hdu1[1].data
-    #data2 = hdu2[1].data
-    #out_data = match_objects(args, data1, data2)
-  
-    #from astropy.io import fits
+    '''
+    from astropy.io import fits
+    hdu1=  fits.open(args.file)
+    hdu2 =  fits.open(args.fileref)
+    data1 = hdu1[1].data
+    data2 = hdu2[1].data
+    '''
+   
     import fitsio
     import pandas
 
     args = parse_args()
-     
     testinputfiles(args)
-
-    # match_objects_test2(args.file, args.fileref)
 
     data1 =  fitsio.read(args.file)
     data1 = data1.astype(data1.dtype.newbyteorder('='))
