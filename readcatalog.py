@@ -109,6 +109,38 @@ def read_alldata2(args):
         all_data_final[key] = np.concatenate(all_data[key])         
 
     return all_data_final
+#Version BBC cartalog
+def read_alldata3(args):
+    import fitsio
+    import numpy as np
+
+    inpath = os.path.expanduser(args.inpath)
+    if not os.path.exists(inpath):
+        print('The path of the catalog does not exist!')
+        return None
+
+    nums = load_explist(args)
+    
+    keys = args.fields
+    
+    all_data = { key : [] for key in keys }
+    all_keys = keys
+
+    for num in nums:
+        inum = int(num)
+        try:
+            einfo = fitsio.read(os.path.join(inpath, 'aardvarkv1.0_des_lenscat_s2n20.%d.fit'%inum))
+            # print('File exp_psf_cat %d.  sucessfully read'%expnum)
+        except (OSError, IOError):
+            print('Unable to open aardvarkv1.0_des_lenscat_s2n20.%s.fits. Skipping it.'%inum) 
+        for key in all_keys:
+            all_data[key].append(einfo[key])
+
+    all_data_final = { key : [] for key in keys }         
+    for key in all_keys:
+        all_data_final[key] = np.concatenate(all_data[key])         
+
+    return all_data_final
 def plotRaDecRoot(data,  name):
     from ROOT import TCanvas, TGraph,  TH2F,  TH2,  TH1
     from ROOT import gROOT, gSystem,  Double
@@ -182,17 +214,16 @@ def plotRaDec(data,  name):
 
     #pl.figure()
     coords = SkyCoord(ra=data['ra'], dec=data['dec'], unit='degree')
-    ra = coords.ra.wrap_at(180 * units.deg).radian
+    ra = coords.ra.wrap_at(180 * units.deg)
     #ra = coords.ra.radian
-    dec = coords.dec.radian
-    pl.plot( ra, dec, 'ko', markersize=1 )
+    dec = coords.dec
+    pl.plot( ra, dec, 'ko', markersize=0.05 )
     pl.xlabel('R.A')
     pl.ylabel('DEC')
     pl.legend()
     pl.grid()
     pl.savefig(name, dpi=150)
     #pl.show()
-
 def plotSkymap(data,  name):
     import matplotlib 
     matplotlib.use('Agg')
@@ -202,17 +233,16 @@ def plotSkymap(data,  name):
 
     coords = SkyCoord(ra=data['ra'], dec=data['dec'], unit='degree')
     ra = coords.ra.wrap_at(180 * units.deg).radian
-    #ra = coords.ra.radian
     dec = coords.dec.radian
     
     #pl.figure()
-    pl.subplot(111, projection="aitoff")
+    pl.subplot(111, projection="aitoff")  # must use radians
     #pl.subplot(111, projection="lambert")
     # Make sure to bin the regions, otherwise Memory errors appear.
     #pl.plot( ra , dec, 'ko', markersize=0.05  )
 
     color_map = pl.cm.Spectral_r
-    image = pl.hexbin(ra, dec, cmap=color_map, gridsize=45, mincnt=1, bins='log')
+    image = pl.hexbin(ra, dec, cmap=color_map, gridsize=100, mincnt=1, bins='log')
     pl.colorbar(image, spacing='uniform', extend='max')
     
     pl.xlabel('R.A')
@@ -221,8 +251,6 @@ def plotSkymap(data,  name):
     pl.grid()
     pl.savefig(name, dpi=150)
     #pl.show()
-
-    
 def main():
     from astropy.io import fits
     import fitsio
@@ -233,11 +261,11 @@ def main():
     data =  read_alldata2(args)
     #df = pandas.DataFrame(data)
     print('Data was read succesfully')
-    #plotRaDecRoot(data,  args.outname)
+    
     plotRaDec(data,  args.outname)
-    #plotSkymapRoot(data,  args.outname)
-    #plotSkymap(data,  args.outname)
+    plotSkymap(data, 'sky' +  args.outname)
     print('plot succesfully done')
+
     
 if __name__ == "__main__":
     main()
