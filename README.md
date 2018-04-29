@@ -34,7 +34,7 @@ All the scripts have the usuals --help and -h flags, if you want more detailed i
       $ python fitinfo.py --file=myfile.fits --hdu=1 --fields 'ra' 'dec' 'mag'
    
 
-# 3) interesct.py
+# 3) intersect.py
 
   This program simply, find the intersection between any number of sets. The sets are files with one column of ints. This is useful for instance to compare find the expousres in common of different zones.
   
