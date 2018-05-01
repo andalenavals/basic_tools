@@ -4,7 +4,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Read catalog program, it is assume a structure of the catalog. First the expousurelist is a column of numbers. Second each expousure have a folder. Third each folder of each expousure have a exp_info_%d.fits, which have the ccd numbers,')
     
     parser.add_argument('--explist', default='',
-                        help='txt list with the number identifier of the expousure')
+                        help='txt list with the number identifier of the exposure')
+    parser.add_argument('--explists', nargs='+',  
+                        help='lists of txt files with the number of exposure to analyse')
     parser.add_argument('--fields', nargs='+',  type=str, 
                         help='list of fields you want to read from the catalog')
     parser.add_argument('--inpath', default='',
@@ -16,10 +18,10 @@ def parse_args():
 
     return args
 
-def load_explist(args):
-    if args.explist != '':
-        print('Read file ',args.explist)
-        with open(args.explist) as fin:
+def load_explist(expfile):
+    if expfile != '':
+        print('Read file ', expfile)
+        with open(expfile) as fin:
             exps = [ line.strip() for line in fin if line[0] != '#' ]
         print('File includes %d exposures'%len(exps))
         exps = sorted(exps)
@@ -37,7 +39,7 @@ def read_alldata(args):
         print('The path of the catalog does not exist!')
         return None
     
-    exps = load_explist(args) 
+    exps = load_explist(args.explist) 
 
     keys = args.fields
     
@@ -84,7 +86,7 @@ def read_alldata2(args):
         print('The path of the catalog does not exist!')
         return None
     
-    exps = load_explist(args) 
+    exps = load_explist(args.explist) 
 
     keys = args.fields
     
@@ -119,7 +121,7 @@ def read_alldata3(args):
         print('The path of the catalog does not exist!')
         return None
 
-    nums = load_explist(args)
+    nums = load_explist(args.explist)
     
     keys = args.fields
     
@@ -223,7 +225,6 @@ def plotRaDec(data,  name):
     pl.legend()
     pl.grid()
     pl.savefig(name, dpi=150)
-    #pl.show()
 def plotSkymap(data,  name):
     import matplotlib 
     matplotlib.use('Agg')
@@ -231,7 +232,7 @@ def plotSkymap(data,  name):
     from astropy.coordinates import SkyCoord
     from astropy import units
 
-    coords = SkyCoord(ra=data['ra'], dec=data['dec'], unit='degree')
+    coords = SkyCoord(ra=data['ra'], dec=data['dec'], unit='degree', frame='icrs')
     ra = coords.ra.wrap_at(180 * units.deg).radian
     dec = coords.dec.radian
     
@@ -240,7 +241,7 @@ def plotSkymap(data,  name):
     #pl.subplot(111, projection="lambert")
     # Make sure to bin the regions, otherwise Memory errors appear.
     #pl.plot( ra , dec, 'ko', markersize=0.05  )
-
+    
     color_map = pl.cm.Spectral_r
     image = pl.hexbin(ra, dec, cmap=color_map, gridsize=100, mincnt=1, bins='log')
     pl.colorbar(image, spacing='uniform', extend='max')
@@ -248,23 +249,30 @@ def plotSkymap(data,  name):
     pl.xlabel('R.A')
     pl.ylabel('DEC')
     pl.legend()
-    pl.grid()
+    pl.grid(True)
     pl.savefig(name, dpi=150)
-    #pl.show()
 def main():
     from astropy.io import fits
     import fitsio
     import numpy as np
     import pandas
+    from os.path import basename
     args = parse_args()
-
+    '''
     data =  read_alldata2(args)
-    #df = pandas.DataFrame(data)
     print('Data was read succesfully')
-    
     plotRaDec(data,  args.outname)
     plotSkymap(data, 'sky' +  args.outname)
     print('plot succesfully done')
+    '''
+    keys =  args.explists
+    data = { key : [] for key in keys }
+    for key in keys:
+        basename = os.path.splitext(basename(keys))[0]
+        data[basename ] = readalldata2(key)
+    
+    
+    
 
     
 if __name__ == "__main__":
