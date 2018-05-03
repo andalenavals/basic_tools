@@ -5,7 +5,7 @@ def parse_args():
     
     parser.add_argument('--explist', default='',
                         help='txt list with the number identifier of the exposure')
-    parser.add_argument('--explists', nargs='+',  
+    parser.add_argument('--explists', nargs='+',  type=str, 
                         help='lists of txt files with the number of exposure to analyse')
     parser.add_argument('--fields', nargs='+',  type=str, 
                         help='list of fields you want to read from the catalog')
@@ -30,18 +30,18 @@ def load_explist(expfile):
     return exps
 
 #Version for V10 psf catalog
-def read_alldata(args):
+def read_alldata(catalogpath,  expolist, fields):
     import fitsio
     import numpy as np
 
-    inpath = os.path.expanduser(args.inpath)
+    inpath = os.path.expanduser(catalogpath)
     if not os.path.exists(inpath):
         print('The path of the catalog does not exist!')
         return None
     
-    exps = load_explist(args.explist) 
+    exps = load_explist(expolist) 
 
-    keys = args.fields
+    keys = fields
     
     all_data = { key : [] for key in keys }
     all_keys = keys
@@ -77,18 +77,18 @@ def read_alldata(args):
     return all_data_final
 
 #Version for V23 psf catalog
-def read_alldata2(args):
+def read_alldata2(catalogpath,  expolist,  fields):
     import fitsio
     import numpy as np
 
-    inpath = os.path.expanduser(args.inpath)
+    inpath = os.path.expanduser(catalogpath)
     if not os.path.exists(inpath):
         print('The path of the catalog does not exist!')
         return None
     
-    exps = load_explist(args.explist) 
+    exps = load_explist(expolist) 
 
-    keys = args.fields
+    keys = fields
     
     all_data = { key : [] for key in keys }
     all_keys = keys
@@ -112,18 +112,18 @@ def read_alldata2(args):
 
     return all_data_final
 #Version BBC cartalog
-def read_alldata3(args):
+def read_alldata3(catalogpath, expolist, fields):
     import fitsio
     import numpy as np
 
-    inpath = os.path.expanduser(args.inpath)
+    inpath = os.path.expanduser(catalogpath)
     if not os.path.exists(inpath):
         print('The path of the catalog does not exist!')
         return None
 
-    nums = load_explist(args.explist)
+    nums = load_explist(expolist)
     
-    keys = args.fields
+    keys = fields
     
     all_data = { key : [] for key in keys }
     all_keys = keys
@@ -143,6 +143,15 @@ def read_alldata3(args):
         all_data_final[key] = np.concatenate(all_data[key])         
 
     return all_data_final
+def wsc_range(data):
+    import numpy as np
+    ra_min =  np.min(data['ra'])
+    ra_max =  np.max(data['ra'])
+    dec_min =  np.min(data['dec'])
+    dec_max =  np.max(data['dec'])
+    wscr =  [ra_min, ra_max,  dec_min,  dec_max]
+    print ( wscr )
+    return wscr
 def plotRaDecRoot(data,  name):
     from ROOT import TCanvas, TGraph,  TH2F,  TH2,  TH1
     from ROOT import gROOT, gSystem,  Double
@@ -225,6 +234,27 @@ def plotRaDec(data,  name):
     pl.legend()
     pl.grid()
     pl.savefig(name, dpi=150)
+def plotRaDecs(data,  names,  outname): 
+    import matplotlib 
+    matplotlib.use('Agg')
+    import matplotlib.pylab as pl
+    pl.rcParams['agg.path.chunksize'] = 100000
+    from astropy.coordinates import SkyCoord
+    from astropy import units
+
+    #pl.figure()
+    colors = ['k', 'b', 'r', 'g', 'm', 'grey' , 'y',  'c']
+    for na, i  in zip(names, range(len(names)) ):
+        coords = SkyCoord(ra=data[na]['ra'], dec=data[na]['dec'], unit='degree')
+        ra = coords.ra.wrap_at(180 * units.deg)
+        #ra = coords.ra.radian
+        dec = coords.dec
+        pl.plot( ra, dec, color=colors[i], marker=',' )
+    pl.xlabel('R.A')
+    pl.ylabel('DEC')
+    pl.legend()
+    pl.grid()
+    pl.savefig(outname, dpi=1500)
 def plotSkymap(data,  name):
     import matplotlib 
     matplotlib.use('Agg')
@@ -258,18 +288,26 @@ def main():
     import pandas
     from os.path import basename
     args = parse_args()
-    '''
-    data =  read_alldata2(args)
+  
+    #data =  read_alldata2(args.inpath,  args.explist ,  args.fields)
+    #wsc_range(data)
+    #print('Data was read succesfully')
+    #plotRaDec(data,  args.outname)
+    #plotSkymap(data, 'sky' +  args.outname)
+    #print('plot succesfully done')
+   
+    data = {}
+    names = []
+    for key in args.explists:
+        basen = os.path.splitext(basename(key))[0]
+        names.append(basen)
+        data[basen ] = read_alldata2(args.inpath,  key,  args.fields)
     print('Data was read succesfully')
-    plotRaDec(data,  args.outname)
-    plotSkymap(data, 'sky' +  args.outname)
+    
+    plotRaDecs(data, names , args.outname)
+    #plotSkymap(data, 'sky' +  args.outname)
     print('plot succesfully done')
-    '''
-    keys =  args.explists
-    data = { key : [] for key in keys }
-    for key in keys:
-        basename = os.path.splitext(basename(keys))[0]
-        data[basename ] = readalldata2(key)
+
     
     
     
