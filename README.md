@@ -38,7 +38,7 @@ All the scripts have the usuals --help and -h flags, if you want more detailed i
 
   This program simply, find the intersection between any number of sets. The sets are files with one column of ints. This is useful for instance to compare find the expousres in common of different zones.
   
-    $ python intersect --files zone01.riz zone02.riz zone03.riz
+    $ python intersect.py --files zone01.riz zone02.riz zone03.riz
   
 # 4) maching.py
   
@@ -60,7 +60,13 @@ All the scripts have the usuals --help and -h flags, if you want more detailed i
      
     $ python readcatalog.py --explist=../DESWL/psf/astro/all_zones.riz --fields 'ra' 'dec' --inpath=/home2/dfa/sobreira/alsina/catalogs/y3a1-v23/ --outname=yv23.png
 
+ 
+ # 6) difference.py
+  This script substracts from one column some specific values that are in other. 
+
+  HOW TO RUN
   
+     $ python difference.py --files allzones.riz zone02.riz zone03.riz
   
-    
+  In this example, it is substracted from allzones.riz the expousues in the files zone02.riz and zone03.riz
     
