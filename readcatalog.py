@@ -243,7 +243,7 @@ def plotRaDecs(data,  names,  outname):
     from astropy import units
 
     #pl.figure()
-    colors = ['k', 'b', 'r', 'g', 'm', 'grey' , 'y',  'c']
+    colors = ['k', 'b', 'r', 'g', 'm', 'grey' , 'y', 'c', 'olive', 'darkblue']
     for na, i  in zip(names, range(len(names)) ):
         coords = SkyCoord(ra=data[na]['ra'], dec=data[na]['dec'], unit='degree')
         ra = coords.ra.wrap_at(180 * units.deg)

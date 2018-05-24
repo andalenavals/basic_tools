@@ -1,9 +1,9 @@
 def parse_args():
     import argparse
-    parser = argparse.ArgumentParser(description='A simple program to find the difference of a set of txt files with only one column of ints')
+    parser = argparse.ArgumentParser(description='A simple program to find the union of a set of txt files with only one column of ints')
     
     parser.add_argument('--files',  nargs='+', default='', type=str, 
-                        help='Files to find the intersection, remember that substraction is not conmutative, so the order of the input matters file1-file2-file3...')
+                        help='Files to find the union,  file1 file2 file3...')
     parser.add_argument('--outname', default='', type=str, 
                         help='Name of the output file example zone01.riz')
 
@@ -15,13 +15,14 @@ def main():
     import numpy as np
  
     args = parse_args()
-    diff= set(np.loadtxt(args.files[0],dtype= 'i4' ))
+    setiter= set(np.loadtxt(args.files[0],dtype= 'i4' ))
     for fil in args.files[1:] :
         setaux= set(np.loadtxt(fil,dtype= 'i4' ))
-        diff =  diff.difference(setaux)
-    print(list(sorted(diff)))
+        setiter =  setiter.union(setaux)
     if(args.outname):
-        np.savetxt(args.outname, np.array(list(sorted(diff))), fmt='%i')
+        np.savetxt(args.outname, np.array(list(sorted(setiter))), fmt='%i')
+    else:
+        print(list(sorted(diff)))
          
         
     
