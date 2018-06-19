@@ -8,6 +8,7 @@ import glob
 import time
 import fitsio
 import pandas
+import galsim
 
 def obfuscate(s):
     mask = 'I Have a Dream'
@@ -66,7 +67,16 @@ def read_image_header(row, img_file):
         detpos = h['DETPOS'].strip()
 
 
+        telra = h['TELRA']
+        teldec = h['TELDEC']
+        telha = h['HA']
+        telra = galsim.Angle.from_hms(telra) / galsim.degrees
+        teldec = galsim.Angle.from_dms(teldec) / galsim.degrees
+        telha = galsim.Angle.from_hms(telha) / galsim.degrees
+        dimmseeing =  h['DIMMSEE']
+        
         airmass = float(h.get('AIRMASS',-999))
+        pressure = float(h.get('PRESSURE',-999))
         sky = float(h.get('SKYBRITE',-999))
         sigsky = float(h.get('SKYSIGMA',-999))
         humidity = float(h.get('HUMIDITY',-999))
@@ -79,11 +89,9 @@ def read_image_header(row, img_file):
         print("Cannot read header information from " + img_file)
         raise
 
-    row['date'] = date
-    row['time'] = time
     row['sat'] = sat
     row['fits_filter'] = filter
-    row['fits_fwhm'] = fwhm
+    row['fwhm'] = fwhm
     row['fits_ccdnum'] = ccdnum
     row['airmass'] = airmass
     row['sky'] = sky
@@ -92,6 +100,10 @@ def read_image_header(row, img_file):
     row['tiling'] = tiling
     row['hex'] = hex
     row['band'] =  band
+    row['telra'] = telra
+    row['teldec'] = teldec
+    row['telha'] = telha
+    row['dimmseeing'] =  dimmseeing
 def run_with_timeout(cmd, timeout_sec):
     # cf. https://stackoverflow.com/questions/1191374/using-module-subprocess-with-timeout
     import subprocess, shlex
@@ -162,7 +174,7 @@ def main():
         data = all_exp[all_exp['expnum'] == exp]
         exp_df = pandas.DataFrame(data)
         # Add some blank columns to be filled in below.
-        for k in [ 'airmass',  'sigsky',  'humidity',  'band']:
+        for k in [ 'band','telra', 'teldec',  'telha' , 'tiling',  'airmass', 'sat', 'fwhm', 'sky',  'sigsky',  'humidity',  'pressure',  'dimmseeing']:
             exp_df[k] = [-999.] * len(data)
       
         exp_df.sort_values('ccdnum', inplace=True)

@@ -11,10 +11,13 @@ __pycache__/
 *.png
 *.riz
 *~
+*.tmp
 
 # Folders
 riz/
 old/
+plotfits/
+outdir/
 
 # mypy
 .mypy_cache/
