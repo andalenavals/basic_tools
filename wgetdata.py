@@ -66,7 +66,6 @@ def read_image_header(row, img_file):
         ccdnum = int(h['CCDNUM'])
         detpos = h['DETPOS'].strip()
 
-
         telra = h['TELRA']
         teldec = h['TELDEC']
         telha = h['HA']
@@ -80,8 +79,13 @@ def read_image_header(row, img_file):
         sky = float(h.get('SKYBRITE',-999))
         sigsky = float(h.get('SKYSIGMA',-999))
         humidity = float(h.get('HUMIDITY',-999))
+        windspd = float(h.get('WINDSPD',-999))
+        winddir = float(h.get('WINDDIR',-999))
 
         tiling = int(h.get('TILING',0))
+        outtemp = float( h.get('OUTTEMP',0) )
+        msurtemp = float(h.get('MSURTEMP',-999)) 
+        dT = float(h.get('MSURTEMP',-999) - h.get('OUTTEMP',0) )
         hex = int(h.get('HEX',0))
 
 
@@ -104,20 +108,12 @@ def read_image_header(row, img_file):
     row['teldec'] = teldec
     row['telha'] = telha
     row['dimmseeing'] =  dimmseeing
-def run_with_timeout(cmd, timeout_sec):
-    # cf. https://stackoverflow.com/questions/1191374/using-module-subprocess-with-timeout
-    import subprocess, shlex
-    from threading import Timer
-
-    proc = subprocess.Popen(shlex.split(cmd))
-    kill_proc = lambda p: p.kill()
-    timer = Timer(timeout_sec, kill_proc, [proc])
-    try:
-        timer.start()
-        proc.communicate()
-    finally:
-        timer.cancel()
-
+    row['dT'] =  dT
+    row['outtemp'] = outtemp
+    row['msurtemp'] = msurtemp
+    row['windspd'] = windspd
+    row['winddir'] = winddir 
+    
 def wget(url_base, path, wdir, file):
     url = url_base + path + file
     full_file = os.path.join(wdir,file)
@@ -145,6 +141,17 @@ def wget(url_base, path, wdir, file):
                 break
     return full_file
 
+def write_fit(data, file_name):
+    import fitsio
+    from fitsio import FITS,FITSHDR
+    import os.path
+    import pandas
+    if not os.path.isfile(file_name):
+        fitsio.write(file_name,  data, clobber=False)
+    else:
+        fits = FITS(file_name,'rw')
+        fits[-1].append(data)
+
 def main():
     args = parse_args()
     wdir = os.path.expanduser(args.outdir)
@@ -170,16 +177,17 @@ def main():
     exps = sorted(exps)
 
     for exp in exps:
+    #for exp in [251789]:
         exp = int(exp)
         data = all_exp[all_exp['expnum'] == exp]
-        exp_df = pandas.DataFrame(data)
+        data =  data[data['ccdnum']==28]
+        exp_df = pandas.DataFrame(data,  columns=['expnum', 'ccdnum', 'band',  'path',  'magzp'])
+
         # Add some blank columns to be filled in below.
-        for k in [ 'band','telra', 'teldec',  'telha' , 'tiling',  'airmass', 'sat', 'fwhm', 'sky',  'sigsky',  'humidity',  'pressure',  'dimmseeing']:
+        for k in [ 'telra', 'teldec',  'telha' , 'tiling',  'airmass', 'sat', 'fwhm', 'sky',  'sigsky',  'humidity',  'pressure',  'dimmseeing',  'dT', 'outtemp',  'msurtemp',  'winddir',  'windspd']:
             exp_df[k] = [-999.] * len(data)
-      
-        exp_df.sort_values('ccdnum', inplace=True)
-        #print(exp_df)
-        #print(exp_df['path'])
+        
+
         for k, row in exp_df.iterrows():
             path = row['path'].strip()
             print('path = ',path)
@@ -194,14 +202,19 @@ def main():
             remove_temp_files(wdir,  root)
             exp_df.iloc[k] = row
 
-    
-
+        print('Done with exposure ',exp)   
+        file_name = os.path.join(wdir, 'Y3A1_atmos_pos_condition.fits')
+        write_fit(exp_df.to_records(index=False), file_name)
+ 
+        '''
         print('Done with exposure ',exp)
         print('exp_df = \n',exp_df.describe())
         exp_info_file = os.path.join(wdir, 'exp_info_%d.fits'%exp)
         fitsio.write(exp_info_file, exp_df.to_records(index=False), clobber=True)
         print('Wrote exposure information to ',exp_info_file)
-
+        '''
+        
+        
     print('\nFinished processing all exposures')
 
 if __name__ == "__main__":
