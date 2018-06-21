@@ -62,13 +62,12 @@ def plotSkymapRoot(data,  name):
     gr.Draw('aitoff')
     c1.Print(name)
 
-def plotTH1(data,  name):
+def plotTH1(data, field, Nbins , xtitle, ytitle, outfile_name):
     from ROOT import TCanvas, TGraph,  TH2F,  TH2,  TH1,  TH1F
     from ROOT import gROOT, gSystem,  Double,  TAxis,  gStyle
     import numpy as np
 
     gStyle.SetOptStat(0)
-    #gStyle.SetOptLogy()
     c1 =  TCanvas('c1', '', 1000,1000)
     c1.SetBottomMargin( 0.15 )
     c1.SetTopMargin( 0.05 )
@@ -76,26 +75,21 @@ def plotTH1(data,  name):
     c1.SetRightMargin( 0.15 )
     c1.Divide(1, 2)
 
-    
-    
-    
-    nbins = 10
-    minx = Double( np.min(data['dT']) )
-    maxx = Double( np.max(data['dT']) )
-
-    
+    nbins = Nbins
+    minx = Double( np.min(data[field]) )
+    maxx = Double( np.max(data[field]) )
+   
     h0 = TH1F('h0', '',  nbins ,  minx ,  maxx )
     for k in range(len(data)):
-        h0.Fill(data['dT'][k])
-        
+        h0.Fill(data[field][k]) 
     
     h = TH1F('h', '',  nbins ,  minx ,  maxx )
     mh = TH1F('mh', '',  nbins ,  minx ,  maxx )
     for i in range(1, nbins + 1):
         binxlow = h.GetBinLowEdge(i)
         binxup =  h.GetXaxis().GetBinUpEdge(i)
-        bool1 = ( data['dT'] <= binxup ) & (binxlow<data['dT']) & (data['rho2p']>0)
-        bool2 = ( data['dT'] <= binxup ) & (binxlow<data['dT']) & (data['rho2p']<0)
+        bool1 = ( data[field] <= binxup ) & (binxlow<data[field]) & (data['rho2p']>0)
+        bool2 = ( data[field] <= binxup ) & (binxlow<data[field]) & (data['rho2p']<0)
         rho2p = data['rho2p'][bool1]
         mrho2p = data['rho2p'][bool2]
         if (len(rho2p) == 0):
@@ -107,12 +101,10 @@ def plotTH1(data,  name):
         else:
             meanmr2p =  np.mean(mrho2p)
 
-        print( - meanmr2p)
+        #print( - meanmr2p)
         h.SetBinContent( i , meanr2p)
         mh.SetBinContent( i , -meanmr2p)
         
-      
- 
     c1.cd(1)
     h0.Draw('')
     h0.GetYaxis().CenterTitle()
@@ -124,15 +116,15 @@ def plotTH1(data,  name):
     h.SetTitleOffset(  0.6 , "x"); 
     h.SetTitleOffset(  0.4 , "y");
     h.GetYaxis().CenterTitle()
-    h.GetYaxis().SetTitle("#bar{#rho_{2}}")
+    h.GetYaxis().SetTitle(ytitle)
     h.GetXaxis().CenterTitle()
-    h.GetXaxis().SetTitle("dT")
+    h.GetXaxis().SetTitle(xtitle)
     h.SetTitleSize(0.065, "x"); 
     h.SetTitleSize(0.065, "y");
     mh.SetLineColor(1)
     mh.SetLineStyle(2)
     mh.Draw('same')
-    c1.Print(name)
+    c1.Print(outfile_name)
     
 def main():
     from astropy.io import fits
@@ -143,7 +135,7 @@ def main():
     data = fitsio.read('y3a1-v29_rho2byexposure_extended.fit')
     data = data.astype(data.dtype.newbyteorder('='))
     #df = pandas.DataFrame(data)
-    plotTH1(data, "histogram.eps")
+    plotTH1(data,'fwhm' , 100, "dT []", "#bar{#rho_{2}}", "histogram.eps")
     
 
     
