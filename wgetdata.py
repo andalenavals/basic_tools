@@ -32,11 +32,11 @@ def remove_temp_files(wdir, root):
     """Remove wdir/root* except for any files listed in the keep_files list
     """
     files = sorted(glob.glob('%s/%s*'%(wdir,root)))
-    print('   Removing the following files from ',wdir)
+    #print('   Removing the following files from ',wdir)
     for f in files:
-        print('       ',os.path.split(f)[1])
+        #print('       ',os.path.split(f)[1])
         os.remove(f)
-    print('   Done')
+    #print('   Done')
 
 def read_image_header(row, img_file):
     """Read some information from the image header and write into the df row.
@@ -72,7 +72,7 @@ def read_image_header(row, img_file):
         telra = galsim.Angle.from_hms(telra) / galsim.degrees
         teldec = galsim.Angle.from_dms(teldec) / galsim.degrees
         telha = galsim.Angle.from_hms(telha) / galsim.degrees
-        dimmseeing =  h['DIMMSEE']
+        dimmseeing =  float(h.get('DIMMSEE',-999))
         
         airmass = float(h.get('AIRMASS',-999))
         pressure = float(h.get('PRESSURE',-999))
@@ -83,7 +83,7 @@ def read_image_header(row, img_file):
         winddir = float(h.get('WINDDIR',-999))
 
         tiling = int(h.get('TILING',0))
-        outtemp = float( h.get('OUTTEMP',0) )
+        outtemp = float( h.get('OUTTEMP', - 999) )
         msurtemp = float(h.get('MSURTEMP',-999)) 
         dT = float(h.get('MSURTEMP',-999) - h.get('OUTTEMP',0) )
         hex = int(h.get('HEX',0))
@@ -120,12 +120,12 @@ def wget(url_base, path, wdir, file):
 
     import wget
     if not os.path.isfile(full_file):
-        print('Downloading ',full_file)
+        #print('Downloading ',full_file)
         # Sometimes this fails with an "http protocol error, bad status line".
         # Maybe from too many requests at once or something.  So we retry up to 5 times.
         nattempts = 5
         for attempt in range(1,nattempts+1):
-            print('wget %s  (attempt %d)'%(url, attempt))
+            #print('wget %s  (attempt %d)'%(url, attempt))
             try:
                 wget.download(url, bar=None, out=full_file)
             except KeyboardInterrupt:
@@ -145,13 +145,17 @@ def write_fit(data, file_name):
     import fitsio
     from fitsio import FITS,FITSHDR
     import os.path
-    import pandas
     if not os.path.isfile(file_name):
         fitsio.write(file_name,  data, clobber=False)
     else:
-        fits = FITS(file_name,'rw')
-        fits[-1].append(data)
-
+        try:
+            fits = FITS(file_name,'rw')
+            fits[-1].append(data)
+        except OSError as e:
+            print("Ignore OSError from writing:",  data['expnum'])
+            print(e)
+            pass
+ 
 def main():
     args = parse_args()
     wdir = os.path.expanduser(args.outdir)
@@ -177,42 +181,46 @@ def main():
     exps = sorted(exps)
 
     for exp in exps:
-    #for exp in [251789]:
+    #for exp in [229360, 229362]:
         exp = int(exp)
         data = all_exp[all_exp['expnum'] == exp]
         data =  data[data['ccdnum']==28]
         exp_df = pandas.DataFrame(data,  columns=['expnum', 'ccdnum', 'band',  'path',  'magzp'])
 
         # Add some blank columns to be filled in below.
+        
         for k in [ 'telra', 'teldec',  'telha' , 'tiling',  'airmass', 'sat', 'fwhm', 'sky',  'sigsky',  'humidity',  'pressure',  'dimmseeing',  'dT', 'outtemp',  'msurtemp',  'winddir',  'windspd']:
             exp_df[k] = [-999.] * len(data)
+
+        try:
+            row = pandas.Series(exp_df.iloc[0])
+        except:
+            print("Unxpected error from exp:",  exp)
+            print(sys.exc_info()[0])
+            continue
         
-
-        for k, row in exp_df.iterrows():
-            path = row['path'].strip()
-            print('path = ',path)
-            
-            base_path, _, _, image_file_name = path.rsplit('/',3)
-            root, ext = image_file_name.rsplit('_',1)
-            print('root, ext = |%s| |%s|'%(root,ext))
-            image_file = wget(url_base, base_path + '/red/immask/', wdir, root + '_' + ext)
-            print('image_file = ',image_file)
-
-            read_image_header(row, image_file)
-            remove_temp_files(wdir,  root)
-            exp_df.iloc[k] = row
-
-        print('Done with exposure ',exp)   
+        path = row['path'].strip()
+        #print('path = ',path)
+        
+        base_path, _, _, image_file_name = path.rsplit('/',3)
+        root, ext = image_file_name.rsplit('_',1)
+        #print('root, ext = |%s| |%s|'%(root,ext))
+        image_file = wget(url_base, base_path + '/red/immask/', wdir, root + '_' + ext)
+        #print('image_file = ',image_file)
+        
+        read_image_header(row, image_file)
+        remove_temp_files(wdir,  root)
+        exp_df.iloc[0] = row
+    
+        
+        
+        #file_name = os.path.join(wdir, '%d_Y3A1_atmos_pos_condition.fits'%exp)
         file_name = os.path.join(wdir, 'Y3A1_atmos_pos_condition.fits')
         write_fit(exp_df.to_records(index=False), file_name)
+        #print('Done with exposure ',exp) 
+        
  
-        '''
-        print('Done with exposure ',exp)
-        print('exp_df = \n',exp_df.describe())
-        exp_info_file = os.path.join(wdir, 'exp_info_%d.fits'%exp)
-        fitsio.write(exp_info_file, exp_df.to_records(index=False), clobber=True)
-        print('Wrote exposure information to ',exp_info_file)
-        '''
+
         
         
     print('\nFinished processing all exposures')
