@@ -88,10 +88,9 @@ def read_alldata2(catalogpath,  expolist,  fields):
     
     exps = load_explist(expolist) 
 
-    keys = fields
-    
+  
+    keys = fields +  ['expnum']
     all_data = { key : [] for key in keys }
-    all_keys = keys
 
     for exp in exps:
         #print('Start work on exp = ',exp)
@@ -103,11 +102,12 @@ def read_alldata2(catalogpath,  expolist,  fields):
             # print('File exp_psf_cat %d.  sucessfully read'%expnum) 
         except (OSError, IOError):
             print('Unable to open exp_psf_cat %s.  Skipping this file.'%expinfo) 
-        for key in all_keys:
+        for key in fields:
             all_data[key].append(expinfo[key])
+        all_data['expnum'].append(len(expinfo[key]) * [expnum])
 
     all_data_final = { key : [] for key in keys }         
-    for key in all_keys:
+    for key in keys:
         all_data_final[key] = np.concatenate(all_data[key])         
 
     return all_data_final
@@ -143,6 +143,53 @@ def read_alldata3(catalogpath, expolist, fields):
         all_data_final[key] = np.concatenate(all_data[key])         
 
     return all_data_final
+#Usually is not a good idea save all the catalog in memory
+def read_somedata(catalogpath,  expolist):
+    import fitsio
+    import numpy as np
+    import pandas
+    inpath = os.path.expanduser(catalogpath)
+    if not os.path.exists(inpath):
+        print('The path of the catalog does not exist!')
+        return None
+    
+    exps = load_explist(expolist) 
+    exps = sorted(exps)
+ 
+    names =  ['expnum', 'usestars']
+    formats = ['i4', 'i4' ]
+    dtype = dict(names = names, formats=formats)
+    outdata = np.recarray((len(exps), ), dtype=dtype)
+    nstarslist =  []
+    explist =  []
+    
+    for exp in exps:
+        #print('Start work on exp = ',exp)
+        expnum = int(exp)
+        #print('expnum = ',expnum)
+        indir = os.path.join(inpath, exp)
+        try:
+            expinfo = fitsio.read(os.path.join(indir, 'exp_psf_cat_%d.fits'%expnum))
+            data = expinfo.astype(expinfo.dtype.newbyteorder('='))
+            df = pandas.DataFrame(data)
+            # print('File exp_psf_cat %d.  sucessfully read'%expnum) 
+        except (OSError, IOError):
+            print('Unable to open exp_psf_cat %s.  Skipping this file.'%expinfo) 
+        boolean = (df['ccdnum'] == 28) & (df['use']== True)
+        nstarslist.append( len( df[boolean] ) )
+        explist.append(expnum)
+
+    values =  []
+    values.append(explist)
+    values.append(nstarslist)
+
+    for key, i in zip(names, range(len(names))):
+        outdata[key] = values[i]
+
+    file_name = "stars.fits"
+    write_fit(outdata,  file_name)
+
+
 def wsc_range(data):
     import numpy as np
     ra_min =  np.min(data['ra'])
@@ -281,6 +328,17 @@ def plotSkymap(data,  name):
     pl.legend()
     pl.grid(True)
     pl.savefig(name, dpi=150)
+def write_fit(data, file_name):
+    import fitsio
+    from fitsio import FITS,FITSHDR
+    import os.path
+    if not os.path.isfile(file_name):
+        fitsio.write(file_name,  data, clobber=False)
+    else:
+        fits = FITS(file_name,'rw')
+        fits[-1].append(data)
+
+
 def main():
     from astropy.io import fits
     import fitsio
@@ -288,14 +346,21 @@ def main():
     import pandas
     from os.path import basename
     args = parse_args()
-  
-    #data =  read_alldata2(args.inpath,  args.explist ,  args.fields)
-    #wsc_range(data)
-    #print('Data was read succesfully')
-    #plotRaDec(data,  args.outname)
-    #plotSkymap(data, 'sky' +  args.outname)
-    #print('plot succesfully done')
-   
+
+    read_somedata(args.inpath,   args.explist)
+
+
+    #APP
+    '''
+    wsc_range(data)
+    print('Data was read succesfully')
+    plotRaDec(data,  args.outname)
+    plotSkymap(data, 'sky' +  args.outname)
+    print('plot succesfully done')
+    '''
+
+    #APP
+    '''
     data = {}
     names = []
     for key in args.explists:
@@ -307,7 +372,7 @@ def main():
     plotRaDecs(data, names , args.outname)
     #plotSkymap(data, 'sky' +  args.outname)
     print('plot succesfully done')
-
+    '''
     
     
     
