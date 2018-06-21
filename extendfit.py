@@ -26,7 +26,7 @@ def main():
     rho_data = rho_data.astype(rho_data.dtype.newbyteorder('='))
     rho_df = pandas.DataFrame(rho_data)
     
-    env_data = fitsio.read('Y3A1_atmos_pos_condition.fit')
+    env_data = fitsio.read('Y3A1_atmos_pos_condition.fits')
     env_data = env_data.astype(env_data.dtype.newbyteorder('='))
     env_df = pandas.DataFrame(env_data)
 

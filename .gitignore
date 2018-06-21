@@ -12,6 +12,12 @@ __pycache__/
 *.riz
 *~
 *.tmp
+*.eps
+*.pdf
+*.err
+*.out
+*.qbs
+*.#
 
 # Folders
 riz/
