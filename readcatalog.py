@@ -156,12 +156,13 @@ def read_somedata(catalogpath,  expolist):
     exps = load_explist(expolist) 
     exps = sorted(exps)
  
-    names =  ['expnum', 'usestars']
-    formats = ['i4', 'i4' ]
+    names =  ['expnum', 'usestars',  'totalstars']
+    formats = ['i4', 'i4',  'i4' ]
     dtype = dict(names = names, formats=formats)
     outdata = np.recarray((len(exps), ), dtype=dtype)
     nstarslist =  []
     explist =  []
+    tstarslist =  []
     
     for exp in exps:
         #print('Start work on exp = ',exp)
@@ -175,6 +176,8 @@ def read_somedata(catalogpath,  expolist):
             # print('File exp_psf_cat %d.  sucessfully read'%expnum) 
         except (OSError, IOError):
             print('Unable to open exp_psf_cat %s.  Skipping this file.'%expinfo) 
+        boo = (df['ccdnum'] == 28)     
+        tstarslist.append(len(df[boo]))
         boolean = (df['ccdnum'] == 28) & (df['use']== True)
         nstarslist.append( len( df[boolean] ) )
         explist.append(expnum)
@@ -182,7 +185,7 @@ def read_somedata(catalogpath,  expolist):
     values =  []
     values.append(explist)
     values.append(nstarslist)
-
+    values.append(tstarslist)
     for key, i in zip(names, range(len(names))):
         outdata[key] = values[i]
 

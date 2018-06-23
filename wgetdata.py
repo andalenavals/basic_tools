@@ -37,7 +37,6 @@ def remove_temp_files(wdir, root):
         #print('       ',os.path.split(f)[1])
         os.remove(f)
     #print('   Done')
-
 def read_image_header(row, img_file):
     """Read some information from the image header and write into the df row.
     """
@@ -85,7 +84,7 @@ def read_image_header(row, img_file):
         tiling = int(h.get('TILING',0))
         outtemp = float( h.get('OUTTEMP', - 999) )
         msurtemp = float(h.get('MSURTEMP',-999)) 
-        dT = float(h.get('MSURTEMP',-999) - h.get('OUTTEMP',0) )
+        dT = float(h.get('MSURTEMP',-999)) - float(h.get('OUTTEMP',0) )
         hex = int(h.get('HEX',0))
 
 
@@ -178,12 +177,14 @@ def main():
             exps = [ line.strip() for line in fin if line[0] != '#' ]
         print('File includes %d exposures'%len(exps))
 
-    exps = sorted(exps)
+    #exps = sorted(exps)
 
     for exp in exps:
     #for exp in [229360, 229362]:
         exp = int(exp)
+        print(exp)
         data = all_exp[all_exp['expnum'] == exp]
+        print(data)
         data =  data[data['ccdnum']==28]
         exp_df = pandas.DataFrame(data,  columns=['expnum', 'ccdnum', 'band',  'path',  'magzp'])
 
@@ -192,12 +193,16 @@ def main():
         for k in [ 'telra', 'teldec',  'telha' , 'tiling',  'airmass', 'sat', 'fwhm', 'sky',  'sigsky',  'humidity',  'pressure',  'dimmseeing',  'dT', 'outtemp',  'msurtemp',  'winddir',  'windspd']:
             exp_df[k] = [-999.] * len(data)
 
+        
+        #row = pandas.Series(exp_df.iloc[0])
+        
         try:
             row = pandas.Series(exp_df.iloc[0])
         except:
             print("Unxpected error from exp:",  exp)
             print(sys.exc_info()[0])
             continue
+        
         
         path = row['path'].strip()
         #print('path = ',path)
