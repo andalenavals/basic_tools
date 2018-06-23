@@ -67,6 +67,9 @@ def plotTH1(data, field, Nbins , xtitle, ytitle, outfile_name):
     from ROOT import gROOT, gSystem,  Double,  TAxis,  gStyle
     import numpy as np
 
+    ignore =  (data[field] ==-999.) |  (data[field] == None)
+    data = data[~ignore]
+    
     gStyle.SetOptStat(0)
     c1 =  TCanvas('c1', '', 1000,1000)
     c1.SetBottomMargin( 0.15 )
@@ -109,12 +112,13 @@ def plotTH1(data, field, Nbins , xtitle, ytitle, outfile_name):
     h0.Draw('')
     h0.GetYaxis().CenterTitle()
     h0.GetYaxis().SetTitle("Entries")
-    h0.SetTitleSize(0.065, "y"); 
+    h0.SetTitleSize(0.065, "y");
+    #h.SetTitleOffset( 0.6 , "y"); 
     c1.cd(2)
     c1.cd(2).SetLogy()
     h.Draw('')
+    h.SetTitleOffset(  0.6 , "y"); 
     h.SetTitleOffset(  0.6 , "x"); 
-    h.SetTitleOffset(  0.4 , "y");
     h.GetYaxis().CenterTitle()
     h.GetYaxis().SetTitle(ytitle)
     h.GetXaxis().CenterTitle()
@@ -132,10 +136,13 @@ def main():
     import numpy as np
     import pandas
    
-    data = fitsio.read('y3a1-v29_rho2byexposure_extended.fit')
+    data = fitsio.read('y3a1-v29_rho2byexposure_extended_final.fit')
     data = data.astype(data.dtype.newbyteorder('='))
     #df = pandas.DataFrame(data)
-    plotTH1(data,'fwhm' , 100, "dT []", "#bar{#rho_{2}}", "histogram.eps")
+
+    field =  'dT'
+    units =  '[m/s]'#' [ #circ C] '
+    plotTH1(data, field , 500, field + units, "#bar{#rho_{2}}", "rho2_vs_" + field + ".pdf")
     
 
     
