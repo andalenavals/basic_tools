@@ -67,7 +67,7 @@ def plotTH1(data, field, Nbins , xtitle, ytitle, outfile_name):
     from ROOT import gROOT, gSystem,  Double,  TAxis,  gStyle
     import numpy as np
 
-    ignore =  (data[field] ==-999.) |  (data[field] == None)
+    ignore =  (data[field] ==-999.) |  (data[field] == None) | ( np.isnan(data[field])) 
     data = data[~ignore]
     
     gStyle.SetOptStat(0)
@@ -78,9 +78,12 @@ def plotTH1(data, field, Nbins , xtitle, ytitle, outfile_name):
     c1.SetRightMargin( 0.15 )
     c1.Divide(1, 2)
 
+    #print (len(data[field]))
+    #print (list(data[field]))
     nbins = Nbins
     minx = Double( np.min(data[field]) )
     maxx = Double( np.max(data[field]) )
+    #print (minx, ' ', maxx, ' ',  nbins)
    
     h0 = TH1F('h0', '',  nbins ,  minx ,  maxx )
     for k in range(len(data)):
@@ -112,7 +115,7 @@ def plotTH1(data, field, Nbins , xtitle, ytitle, outfile_name):
     h0.Draw('')
     h0.GetYaxis().CenterTitle()
     h0.GetYaxis().SetTitle("Entries")
-    h0.SetTitleSize(0.065, "y");
+    h0.SetTitleSize(0.045, "y");
     #h.SetTitleOffset( 0.6 , "y"); 
     c1.cd(2)
     c1.cd(2).SetLogy()
@@ -140,8 +143,9 @@ def main():
     data = data.astype(data.dtype.newbyteorder('='))
     #df = pandas.DataFrame(data)
 
-    field =  'dT'
-    units =  '[m/s]'#' [ #circ C] '
+    #field =  'dT'
+    field =  'teldec'
+    units =  '[deg]'
     plotTH1(data, field , 500, field + units, "#bar{#rho_{2}}", "rho2_vs_" + field + ".pdf")
     
 
