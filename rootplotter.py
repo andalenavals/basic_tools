@@ -1,3 +1,47 @@
+def plotRaDec(data,  name): 
+    import matplotlib 
+    matplotlib.use('Agg')
+    import matplotlib.pylab as pl
+    from astropy.coordinates import SkyCoord
+    from astropy import units
+
+    #pl.figure()
+    coords = SkyCoord(ra=data['telra'], dec=data['teldec'], unit='degree')
+    ra = coords.ra.wrap_at(180 * units.deg)
+    #ra = coords.ra.radian
+    dec = coords.dec
+    pl.plot( ra, dec, 'k.', markersize=0.05 )
+    pl.xlabel('R.A')
+    pl.ylabel('DEC')
+    pl.legend()
+    pl.grid()
+    pl.savefig(name, dpi=150)
+def plotRaDec2D(data,  name): 
+    import matplotlib 
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    from astropy.coordinates import SkyCoord
+    from astropy import units
+    import numpy as np
+    from matplotlib.colors import LogNorm
+
+    data = data[data['rho2p']>0]
+    coords = SkyCoord(ra=data['telra'], dec=data['teldec'], unit='degree')
+    ra = coords.ra.wrap_at(180 * units.deg)
+    #ra = coords.ra.radian
+    dec = coords.dec
+    rho2p = data['rho2p']
+ 
+    fig = plt.figure()
+    #rho2p = (rho2p -np.nanmin(rho2p)) /(np.nanmax(rho2p) - np.nanmin(rho2p))
+ 
+    sct = plt.scatter(ra, dec, s=1, marker='p' , cmap='gnuplot', c=rho2p, norm=LogNorm( vmin=np.nanmin(rho2p), vmax=np.nanmax(rho2p))  )
+    plt.colorbar(sct)
+    plt.xlabel('R.A')
+    plt.ylabel('DEC')
+    #pl.legend()
+    #pl.grid()
+    plt.savefig(name, dpi=150)
 def plotRaDecRoot(data,  name):
     from ROOT import TCanvas, TGraph,  TH2F,  TH2,  TH1
     from ROOT import gROOT, gSystem,  Double
@@ -10,7 +54,7 @@ def plotRaDecRoot(data,  name):
     c1.SetLeftMargin( 0.15 )
     c1.SetRightMargin( 0.15 )
 
-    gr = TGraph( len(data['dec']) - 1, data['dec'], data['ra'] )   
+    gr = TGraph( len(data['teldec']) - 1, data['teldec'], data['telra'] )   
  
     gr.SetTitle("")
     gr.GetYaxis().SetTitle("RA")
@@ -143,11 +187,14 @@ def main():
     data = data.astype(data.dtype.newbyteorder('='))
     #df = pandas.DataFrame(data)
 
-    #field =  'dT'
+    #plotRaDecRoot(data, 'footprint.pdf')
+    plotRaDec2D(data, 'footprint.pdf')
+    
+    '''
     field =  'teldec'
     units =  '[deg]'
     plotTH1(data, field , 500, field + units, "#bar{#rho_{2}}", "rho2_vs_" + field + ".pdf")
-    
+    '''
 
     
     

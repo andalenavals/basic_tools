@@ -8,7 +8,7 @@ import glob
 import time
 import fitsio
 import pandas
-#import galsim
+import galsim
 
 def obfuscate(s):
     mask = 'I Have a Dream'
@@ -68,9 +68,9 @@ def read_image_header(row, img_file):
         telra = h['TELRA']
         teldec = h['TELDEC']
         telha = h['HA']
-        #telra = galsim.Angle.from_hms(telra) / galsim.degrees
-        #teldec = galsim.Angle.from_dms(teldec) / galsim.degrees
-        #telha = galsim.Angle.from_hms(telha) / galsim.degrees
+        telra = galsim.Angle.from_hms(telra) / galsim.degrees
+        teldec = galsim.Angle.from_dms(teldec) / galsim.degrees
+        telha = galsim.Angle.from_hms(telha) / galsim.degrees
         dimmseeing =  float(h.get('DIMMSEE',-999))
         
         airmass = float(h.get('AIRMASS',-999))
