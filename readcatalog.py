@@ -152,35 +152,40 @@ def read_somedata(catalogpath,  expolist):
     if not os.path.exists(inpath):
         print('The path of the catalog does not exist!')
         return None
+
+    exps = load_explist(expolist)
     
-    exps = load_explist(expolist) 
-    exps = sorted(exps)
- 
-    names =  ['expnum', 'usestars',  'totalstars']
+    names =  ['expnum', 'musestars',  'mtotalstars']
     formats = ['i4', 'i4',  'i4' ]
     dtype = dict(names = names, formats=formats)
     outdata = np.recarray((len(exps), ), dtype=dtype)
     nstarslist =  []
     explist =  []
     tstarslist =  []
+
     
-    for exp in exps:
+    for exp in sorted(exps):
         #print('Start work on exp = ',exp)
         expnum = int(exp)
         #print('expnum = ',expnum)
         indir = os.path.join(inpath, exp)
         try:
-            expinfo = fitsio.read(os.path.join(indir, 'exp_psf_cat_%d.fits'%expnum))
-            data = expinfo.astype(expinfo.dtype.newbyteorder('='))
+            expname = os.path.join(indir, 'exp_psf_cat_%d.fits'%expnum)  
+            expstars = fitsio.read(expname, ext='stars')
+            data = expstars.astype(expstars.dtype.newbyteorder('='))
+            ccdnums = data['ccdnum'].astype(int)
             df = pandas.DataFrame(data)
+            #expcat = fitsio.read(expname, ext='info')
             # print('File exp_psf_cat %d.  sucessfully read'%expnum) 
         except (OSError, IOError):
-            print('Unable to open exp_psf_cat %s.  Skipping this file.'%expinfo) 
+            print('Unable to open exp_psf_cat %s.  Skipping this file.'%expinfo)
+
         boo = (df['ccdnum'] == 28)     
         tstarslist.append(len(df[boo]))
         boolean = (df['ccdnum'] == 28) & (df['use']== True)
         nstarslist.append( len( df[boolean] ) )
         explist.append(expnum)
+        
 
     values =  []
     values.append(explist)
@@ -192,6 +197,21 @@ def read_somedata(catalogpath,  expolist):
     file_name = "stars.fits"
     write_fit(outdata,  file_name)
 
+#Implenting Mikes method
+def read_somedata2(catalogpath,  expolist):
+    from read_psf_cats import read_data
+
+
+    exps = load_explist(expolist) 
+    exps = sorted(exps)
+    
+    keys = ['use']
+    data, bands, tilings = read_data(exps, catalogpath, keys, limit_bands='riz', prefix='piff',
+                                     use_reserved=False, frac=1.)
+
+    file_name = "stars2.fits"
+    print('Finished reading data')
+    write_fit(data,  file_name)
 
 def wsc_range(data):
     import numpy as np
@@ -350,7 +370,7 @@ def main():
     from os.path import basename
     args = parse_args()
 
-    read_somedata(args.inpath,   args.explist)
+    read_somedata2(args.inpath,   args.explist)
 
 
     #APP

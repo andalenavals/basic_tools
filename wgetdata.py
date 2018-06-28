@@ -155,8 +155,7 @@ def write_fit(data, file_name):
             print(e)
             pass
  
-def main():
-    args = parse_args()
+def GetData1(args):
     wdir = os.path.expanduser(args.outdir)
     print('work dir = ',wdir)
     try:
@@ -182,9 +181,9 @@ def main():
     for exp in exps:
     #for exp in [229360, 229362]:
         exp = int(exp)
-        print(exp)
+        #print(exp)
         data = all_exp[all_exp['expnum'] == exp]
-        print(data)
+        #print(data)
         data =  data[data['ccdnum']==28]
         exp_df = pandas.DataFrame(data,  columns=['expnum', 'ccdnum', 'band',  'path',  'magzp'])
 
@@ -194,15 +193,12 @@ def main():
             exp_df[k] = [-999.] * len(data)
 
         
-        #row = pandas.Series(exp_df.iloc[0])
-        
         try:
             row = pandas.Series(exp_df.iloc[0])
         except:
             print("Unxpected error from exp:",  exp)
             print(sys.exc_info()[0])
             continue
-        
         
         path = row['path'].strip()
         #print('path = ',path)
@@ -214,21 +210,83 @@ def main():
         #print('image_file = ',image_file)
         
         read_image_header(row, image_file)
-        #remove_temp_files(wdir,  root)
+        remove_temp_files(wdir,  root)
         exp_df.iloc[0] = row
-    
-        
-        
+     
         #file_name = os.path.join(wdir, '%d_Y3A1_atmos_pos_condition.fits'%exp)
-        file_name = os.path.join(wdir, 'Y3A1_atmos_pos_condition.fits')
+        file_name = os.path.join(wdir, 'Y3A1_some_parameters.fits')
         write_fit(exp_df.to_records(index=False), file_name)
-        #print('Done with exposure ',exp) 
-        
- 
-
-        
+        #print('Done with exposure ',exp)       
         
     print('\nFinished processing all exposures')
+
+def GetData2(args):
+    wdir = os.path.expanduser(args.outdir)
+    print('work dir = ',wdir)
+    try:
+        if not os.path.exists(wdir):
+            os.makedirs(wdir)
+    except OSError as e:
+        print("Ignore OSError from makedirs(work):")
+        print(e)
+        pass
+
+    url_base = 'https://rmjarvis:%s@desar2.cosmology.illinois.edu/DESFiles/desarchive/'%ps()
+    all_exp = fitsio.read('exposures-ccds-Y3A1_COADD.fits')
+    all_exp = all_exp.astype(all_exp.dtype.newbyteorder('='))
+   
+    if args.filexps != '':
+        print('Read file ',args.filexps)
+        with open(args.filexps) as fin:
+            exps = [ line.strip() for line in fin if line[0] != '#' ]
+        print('File includes %d exposures'%len(exps))
+
+    for exp in sorted(exps):
+        exp = int(exp)
+        #print(exp)
+        data = all_exp[all_exp['expnum'] == exp]
+        #print(data)
+        exp_df = pandas.DataFrame(data,  columns=['expnum', 'ccdnum', 'band',  'path',  'magzp'])
+
+        # Add some blank columns to be filled in below.
+        
+        for k in [ 'telra', 'teldec',  'telha' , 'tiling',  'airmass', 'sat', 'fwhm', 'sky',  'sigsky',  'humidity',  'pressure',  'dimmseeing',  'dT', 'outtemp',  'msurtemp',  'winddir',  'windspd']:
+            exp_df[k] = [-999.] * len(data)
+
+
+
+        for k, row in exp_df.iterrows():
+            ccdnum =  row['ccdnum']
+            try:
+                path = row['path'].strip()
+                base_path, _, _, image_file_name = path.rsplit('/',3)
+                root, ext = image_file_name.rsplit('_',1)
+                #print('root, ext = |%s| |%s|'%(root,ext))
+                image_file = wget(url_base, base_path + '/red/immask/', wdir, root + '_' + ext)
+                #print('image_file = ',image_file)
+                read_image_header(row, image_file)
+                remove_temp_files(wdir,  root)
+                exp_df.iloc[k] = row
+                
+            except:
+                print("Unxpected error from exp, ccd:",  exp,  ccdnum)
+                print(sys.exc_info()[0])
+                continue
+        
+        
+        #print('path = ',path)
+     
+        #file_name = os.path.join(wdir, '%d_Y3A1_atmos_pos_condition.fits'%exp)
+        file_name = os.path.join(wdir, 'Y3A1_extrafields.fits')
+        write_fit(exp_df.to_records(index=False), file_name)
+        #print('Done with exposure ',exp)       
+        
+    print('\nFinished processing all exposures')
+
+def main():
+    args = parse_args()
+    
+    GetData2(args)
 
 if __name__ == "__main__":
     main()

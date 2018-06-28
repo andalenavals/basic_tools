@@ -22,14 +22,14 @@ def write_fit(data, file_name):
 
 def main():
     
-    rho_data = fitsio.read('Y3A1_atmos_pos_condition_conca.fit')
+    rho_data = fitsio.read('Y3A1_atmos_pos_condition_conca.fits')
     rho_data = rho_data.astype(rho_data.dtype.newbyteorder('='))
     rho_df = pandas.DataFrame(rho_data)    
     
     newdf =  rho_df.sort_values('expnum')
     newdf = newdf.reset_index(drop=True)
 
-    write_fit(newdf.to_records(index=False), 'Y3A1_atmos_pos_condition_conca_sorted.fit')
+    write_fit(newdf.to_records(index=False), 'Y3A1_atmos_pos_condition_conca_sorted.fits')
 
 if __name__ == "__main__":
     main()
