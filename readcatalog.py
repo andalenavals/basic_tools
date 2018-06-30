@@ -370,7 +370,10 @@ def main():
     from os.path import basename
     args = parse_args()
 
-    read_somedata2(args.inpath,   args.explist)
+    data =  read_alldata2(args.inpath,  key,  args.fields)
+    plotRaDec(data,  'exposure.png')
+    #Read some data
+    #read_somedata2(args.inpath,   args.explist)
 
 
     #APP

@@ -23,18 +23,18 @@ def write_fit(data, file_name):
 def main():
 
     #Adding columns
-    rho_data = fitsio.read('y3a1-v29_rho2byexposure2.fits')
+    rho_data = fitsio.read('y3a1-v29_rho2byexposure2_stars.fits')
     rho_data = rho_data.astype(rho_data.dtype.newbyteorder('='))
     rho_df = pandas.DataFrame(rho_data)
     
-    env_data = fitsio.read('stars2_byexp.fits')
+    env_data = fitsio.read('Y3A1_atmos.fits')
     env_data = env_data.astype(env_data.dtype.newbyteorder('='))
     env_df = pandas.DataFrame(env_data)
 
     result = pandas.merge(rho_df, env_df, on='expnum')
 
 
-    write_fit(result.to_records(index=False), 'y3a1-v29_rho2byexposure2_stars.fits')
+    write_fit(result.to_records(index=False), 'y3a1-v29_rho2byexposure2_extended_final.fits')
 
     
 

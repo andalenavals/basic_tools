@@ -45,12 +45,12 @@ def main():
 
 
     #data = fitsio.read(args.file)
-    filename =  '/data/git_repositories/basic_tools/y3a1-v29_rho2byexposure_extended_final.fits'
+    filename =  '/data/git_repositories/basic_tools/y3a1-v29_rho2byexposure2_extended_final.fits'
     data = fitsio.read(filename)
     data = data.astype(data.dtype.newbyteorder('='))
     df = pandas.DataFrame(data)  
  
-    columns1 =  ['usestars', 'totalstars']
+    columns1 =  ['musestars', 'mtotalstars']
     columns2 =  ['magzp', 'telra', 'teldec', 'telha', 'tiling', 'airmass', 'sat', 'fwhm', 'sky', 'sigsky', 'humidity', 'pressure', 'dimmseeing', 'dT', 'outtemp', 'msurtemp', 'winddir', 'windspd']
     
 
