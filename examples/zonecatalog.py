@@ -41,6 +41,10 @@ def main():
     import fitsio
     from fitsio import FITS,FITSHDR
     import pandas
+    import numpy as np
+    from astropy.coordinates import Angle
+    import astropy.units as u
+    
     args = parse_args()
 
 
@@ -51,11 +55,13 @@ def main():
     df = pandas.DataFrame(data)  
  
     columns1 =  ['musestars', 'mtotalstars']
-    columns2 =  ['magzp', 'telra', 'teldec', 'telha', 'tiling', 'airmass', 'sat', 'fwhm', 'sky', 'sigsky', 'humidity', 'pressure', 'dimmseeing', 'dT', 'outtemp', 'msurtemp', 'winddir', 'windspd']
+    columns2 =  ['magzp', 'tiling', 'airmass', 'sat', 'fwhm', 'sky', 'sigsky', 'humidity', 'pressure', 'dimmseeing', 'dT', 'outtemp', 'msurtemp', 'winddir', 'windspd',  'teldec', 'telha']
+    columns3 =  ['telra']
     
 
     dfout =  pandas.DataFrame(index=[0])
     for zn in range(1, 216):
+    #for zn in range(14, 15):
         print(zn)
         zonefile = '/data/git_repositories/basic_tools/riz/zone' + str(zn) + '.riz'
         exps = load_explist(zonefile)
@@ -68,10 +74,23 @@ def main():
             value = dfaux.loc[(dfaux[f1] != -999.) ,  f1].sum() 
             dfout[f1] = value
         for f2 in columns2:
-            value = dfaux.loc[(dfaux[f2] != -999.) ,  f2].mean() 
+            value = dfaux.loc[(dfaux[f2] != -999.) ,  f2].mean()
             dfout[f2] = value
-
-        file_name = "y3a1-v29_rho2byzone_ext.fits"
+        for f3 in columns3:
+            lis = dfaux.loc[(dfaux[f3] != -999.) ,  f3]
+            #print (list(lis))
+            a = Angle(list(lis) * u.deg)
+            a = a.wrap_at(180 * u.deg).degree
+            b = Angle(np.mean(a) * u.deg).wrap_at(360 * u.deg).degree
+            dfout[f3] = b
+            
+            '''
+            if(abs(lis.max() - lis.min()) > 300):
+                dfout[f3] = lis[50]
+            else:
+                dfout[f3] =  lis.mean()
+            '''
+        file_name = "y3a1-v29_rho2byzone_extrafields.fits"
         write_fit(dfout.to_records(index=False),  file_name)
 
     

@@ -24,19 +24,29 @@ def plotRaDec2D(data, field, title,   name):
     from astropy import units
     import numpy as np
     from matplotlib.colors import LogNorm
-
-    data = data[data[field]>0]
-    coords = SkyCoord(ra=data['telra'], dec=data['teldec'], unit='degree')
+    
+    data1 = data[data[field]>0]
+    coords = SkyCoord(ra=data1['telra'], dec=data1['teldec'], unit='degree')
     ra = coords.ra.wrap_at(180 * units.deg)
     #ra = coords.ra.radian
     dec = coords.dec
-    rho2p = data[field]
- 
+    rho2p = data1[field]
+
+    data2 = data[data[field]<0]
+    coords2 = SkyCoord(ra=data2['telra'], dec=data2['teldec'], unit='degree')
+    ra2 = coords2.ra.wrap_at(180 * units.deg)
+    #ra = coords.ra.radian
+    dec2 = coords2.dec 
+    mdatan = [ -x for x in data2[field]]
+
     fig = plt.figure()
     #rho2p = (rho2p -np.nanmin(rho2p)) /(np.nanmax(rho2p) - np.nanmin(rho2p))
  
-    #sct = plt.scatter(ra, dec, s=1, marker='p' , cmap='gnuplot', c=rho2p, norm=LogNorm( vmin=10 ** ( - 6), vmax=10 ** ( - 5))  )
-    sct = plt.scatter(ra, dec, s=100, marker='p' , cmap='tab20c', c=rho2p, norm=LogNorm( vmin=np.nanmin(rho2p), vmax=np.nanmax(rho2p))  )
+    #sct = plt.scatter(ra, dec, s=100, marker='s' , cmap='seismic', c=rho2p, norm=LogNorm( vmin=10 ** ( - 8), vmax=10 ** ( - 3))  )
+    sct = plt.scatter(ra, dec, s=100, marker='s' , cmap='gnuplot', c=rho2p, norm=LogNorm( vmin=np.nanmin(rho2p), vmax=np.nanmax(rho2p))  )
+    plt.scatter(ra2, dec2, s=100, marker='p' , cmap='gnuplot', c=mdatan, norm=LogNorm( vmin=np.nanmin(rho2p), vmax=np.nanmax(rho2p))   )
+    #plt.scatter(ra2, dec2, s=100, marker='p' , cmap='seismic', c=mdatan, norm=LogNorm( vmin=10 ** ( - 8), vmax=10 ** ( - 3))   )
+    
     plt.colorbar(sct)
     plt.xlabel('R.A')
     plt.ylabel('DEC')
@@ -256,21 +266,29 @@ def main():
     import numpy as np
     import pandas
    
-    data = fitsio.read('y3a1-v29_rho2byzone_ext.fits')
+    #data = fitsio.read('y3a1-v29_rho2byexposure_extended_final.fits')
+    data = fitsio.read('y3a1-v29_rho2byzone_extended_final.fits')
     data = data.astype(data.dtype.newbyteorder('='))
+
+    '''
+    pzones = [6, 7, 8, 9, 10, 11, 12]
+    boo = [ (x not in pzones)for x in data['zonenum']]
+    data = data[boo]
+    '''
+    #data =  data[(data['zonenum']>=14)&(data['zonenum']<=14)]
     #df = pandas.DataFrame(data)
 
     #plotRaDecRoot(data, 'footprint.pdf')
-    #plotRaDec2D(data, 'mrho2p', 'rho2p','footprint_rho22.pdf')
-    plotRaDec2D(data, 'musestars','usestars' , 'footprint_stars.pdf')
-    #plotRaDec2D(data, 'mtotalstars','totalstars' , 'footprint_totalstars.pdf')
+    plotRaDec2D(data, 'mrho2p', 'mrho2p','footprint_rho2.pdf')
+    plotRaDec2D(data, 'musestars','musestars' , 'footprint_stars.pdf')
+    plotRaDec2D(data, 'mtotalstars','mtotalstars' , 'footprint_totalstars.pdf')
 
     columns =  ['airmass',  'dimmseeing',  'dT', 'fwhm', 'humidity', 'msurtemp',  'outtemp', 'sat',  'sigsky',  'sky',  'teldec', 'telha',  'telra',  'tiling',  'mtotalstars',  'musestars' ,  'winddir',  'windspd' ]
-    units =  [' ', '[arcsec]', '[Celcius]', ' ',  '[%]', '[Celsius]', '[Celsius]', ' ', ' ', '[deg]', '[deg]','[deg]', ' ', ' ',  '  ', '[deg]',  '[m/s]'   ]
+    units =  [' ', '[arcsec]', '[Celcius]', ' ',  '[%]', '[Celsius]', '[Celsius]', ' ', ' ', ' ', '[deg]', '[deg]','[deg]', ' ', ' ',  '  ', '[deg]',  '[m/s]'   ]
     
-    #for field,  units in zip(columns, units):
-        #plotTH1(data, field , 500, field + ' ' +  units, "#bar{#rho_{2}}", "rho2_vs_" + field + ".pdf")
-        #plotScatter(data, field , field +' ' +  units, "rho2", "rho2_vs_" + field + '_scatter' +  ".pdf")
+    for field,  units in zip(columns, units):
+        plotTH1(data, field , 500, field + ' ' +  units, "#bar{#rho_{2}}", "rho2_vs_" + field + ".pdf")
+        plotScatter(data, field , field +' ' +  units, "rho2", "rho2_vs_" + field + '_scatter' +  ".pdf")
     
         
     

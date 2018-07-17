@@ -4,45 +4,63 @@ All the scripts have the usuals --help and -h flags, if you want more detailed i
   
   # 1) split.py 
     
-  This program divides files in sets of rows, then it generates output files for each set. The maximum difference between the number of rows of all the generated files is 1. It redistribuite the residue over all the sets without changing the order of the original rows.
+  This program divides files in sets of rows, then it generates output
+  files for each set. The maximum difference between the number of
+  rows of all the generated files is 1. It redistribuite the residue
+  over all the sets without changing the order of the original rows.
   
-   HOW TO RUN
+  HOW TO RUN
     
-      $ python spliy.py --file=zone.riz --parts=7
+      $ python split.py --file=zone.riz --parts=7
   
   
- # 2) fitinfo.py
+  # 2) fitinfo2.py
   
-  This program reads fits files. 
-  
-   HOWTO RUN 
-  
-   If you want to know the basic informaion inside the file do
-    
-      $ python fitinfo.py --file=myfile.fits
+  This program reads fits files. There is also avaliable a fitinfo.py
+  program however, version 2 uses pandas while version 1 PrettyPrint
 
-   Now, if you want to look inside an specific HDU you have to select it with the flag --hdu. Might be you want to know first the header information of the hdu and if it have columns see there names, so the following two additional booleans flags will help.
+  HOW TO RUN 
+
+      If you want to know the basic informaion inside the file do
+    
+      $ python fitinfo2.py --file=myfile.fits
+
+      Now, if you want to look inside an specific HDU you have to
+      select it with the flag --hdu. Might be you want to know first
+      the header information of the hdu and if it have columns see
+      there names, so the following two additional booleans flags will
+      help.
 
       $ python fitinfo.py --file=myfile.fits --hdu=1 --header --columns
 
-   Aditional if the hdu is a table you can see all the data of the table,
+      Aditional if the hdu is a table you can see all the data of the table,
 
       $ python fitinfo.py --file=myfile.fits --hdu=1 --alldata 
 
-   or if it have too many columns and you do not want to print all of them, you can select a field
+      or if it have too many columns and you do not want to print all
+      of them, you can selects some fields
   
       $ python fitinfo.py --file=myfile.fits --hdu=1 --fields 'ra' 'dec' 'mag'
    
 
-# 3) intersect.py
+   # 3) intersect.py
 
-  This program simply, find the intersection between any number of sets. The sets are files with one column of ints. This is useful for instance to compare find the expousres in common of different zones.
+  This program simply, find the intersection between any number of
+  sets. The sets are files with one column of ints. This is useful for
+  instance to compare find the expousres in common of different zones.
   
     $ python intersect.py --files zone01.riz zone02.riz zone03.riz
   
 # 4) maching.py
   
-  This program make a match of two files based on their R.A and DEC information. Usually, we want to add one field from one file that is not in the other. The file that have this additional information is call the --fileref and the file of destine just --file. So the outputh after running this script will be, all the information of the --file and the additional --fields included from --fileref. Both files must have fields called 'ra' and 'dec' or any combination of capital or lower letters. 
+  This program make a match of two files based on their R.A and DEC
+  information. Usually, we want to add one field from one file that is
+  not in the other. The file that have this additional information is
+  call the --fileref and the file of destine just --file. So the
+  outputh after running this script will be, all the information of
+  the --file and the additional --fields included from --fileref. Both
+  files must have fields called 'ra' and 'dec' or any combination of
+  capital or lower letters.
   
   HOW TO RUN
     
