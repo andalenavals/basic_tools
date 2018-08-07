@@ -5,14 +5,8 @@ def parse_args():
     
     parser.add_argument('--explist', default='',
                         help='txt list with the number identifier of the exposure')
-    parser.add_argument('--explists', nargs='+',  type=str, 
-                        help='lists of txt files with the number of exposure to analyse')
-    parser.add_argument('--fields', nargs='+',  type=str, 
-                        help='list of fields you want to read from the catalog')
     parser.add_argument('--inpath', default='',
                         help='Place where input catalogs is, it is assumed that each expousure have a folder')
-    parser.add_argument('--outname', default='', type=str, 
-                        help='Name of the output image example zone01.png')
 
     args = parser.parse_args()
 
@@ -40,12 +34,11 @@ def read_somedata(catalogpath,  expolist):
 
     exps = load_explist(expolist)
     
-    names =  ['expnum', 'mean_obs_e1', 'mean_obs_e2',  'mean_obs_e',
-    'mean_piff_e1' 'mean_piff_e2',  'mean_piff_e']
+    names =  ['expnum', 'mean_obs_e1', 'mean_obs_e2',  'mean_obs_e', 'mean_piff_e1' ,'mean_piff_e2',  'mean_piff_e']
     formats = ['i4', 'f4', 'f4', 'f4', 'f4', 'f4', 'f4' ]
     dtype = dict(names = names, formats=formats)
     outdata = np.recarray((1, ), dtype=dtype)
-    
+    file_name = "mean_ellip_byexp.fits"
     for exp in sorted(exps):
         expnum = int(exp)
         indir = os.path.join(inpath, exp)
@@ -53,23 +46,19 @@ def read_somedata(catalogpath,  expolist):
             expname = os.path.join(indir, 'exp_psf_cat_%d.fits'%expnum)  
             expfile = fitsio.read(expname)
             data = expfile.astype(expfile.dtype.newbyteorder('='))
+           
             outdata['expnum'] = expnum
             outdata['mean_obs_e1'] = np.mean(data['obs_e1'])
             outdata['mean_obs_e2'] = np.mean(data['obs_e2'])
-            outdata['mean_obs_e'] = np.mean(data['obs_e1'])
-            outdata['mean_piff_e1'] = np.mean(data['obs_e1'])
-            outdata['mean_piff_e2'] = np.mean(data['obs_e1'])
-            outdata['mean_piff_e'] = np.mean(data['obs_e1'])
+            outdata['mean_obs_e'] = np.mean(np.sqrt(data['obs_e1']**2+data['obs_e2']**2))
+            outdata['mean_piff_e1'] = np.mean(data['piff_e1'])
+            outdata['mean_piff_e2'] = np.mean(data['piff_e2'])
+            outdata['mean_piff_e'] = np.mean(np.sqrt(data['piff_e1']**2+data['piff_e2']**2))
              
-            print(outdata)
-            #write_fit(outdata,  file_name)
+            #print(outdata)
+            write_fit(outdata,  file_name)
         except (OSError, IOError):
             print('Unable to open exp_psf_cat %s.  Skipping this file.'%expinfo)
-
-       
-   
-   
-
 
 
 def write_fit(data, file_name):
@@ -84,15 +73,8 @@ def write_fit(data, file_name):
 
 
 def main():
-    from astropy.io import fits
-    import fitsio
-    import numpy as np
-    import pandas
-    from os.path import basename
-    args = parse_args()
-
-    #APP
-    read_somedata2(args.inpath,   args.explist)
+    args=parse_args()
+    read_somedata(args.inpath,   args.explist)
   
 
     
