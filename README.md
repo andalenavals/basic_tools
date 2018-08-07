@@ -1,8 +1,22 @@
 ## basic_tools
-Miscelaneous set of basic tools, useful in data analysis, focused in cosmology. 
-All the scripts have the usuals --help and -h flags, if you want more detailed information.
+
+Miscelaneous set of basic tools, useful in data analysis, focused in
+cosmology.  All the scripts have the usuals --help and -h flags, if
+you want more detailed information.
+
+  # difference.py
+  This script substracts from one column some specific values that are in other. 
+
+  HOW TO RUN
   
-  # 1) split.py 
+     $ python difference.py --files allzones.riz zone02.riz zone03.riz
+  
+  In this example, it is substracted from allzones.riz the expousues
+  in the files zone02.riz and zone03.riz
+    
+
+
+  # split.py 
     
   This program divides files in sets of rows, then it generates output
   files for each set. The maximum difference between the number of
@@ -14,7 +28,7 @@ All the scripts have the usuals --help and -h flags, if you want more detailed i
       $ python split.py --file=zone.riz --parts=7
   
   
-  # 2) fitinfo2.py
+  # fitinfo2.py
   
   This program reads fits files. There is also avaliable a fitinfo.py
   program however, version 2 uses pandas while version 1 PrettyPrint
@@ -43,7 +57,7 @@ All the scripts have the usuals --help and -h flags, if you want more detailed i
       $ python fitinfo.py --file=myfile.fits --hdu=1 --fields 'ra' 'dec' 'mag'
    
 
-   # 3) intersect.py
+   # intersect.py
 
   This program simply, find the intersection between any number of
   sets. The sets are files with one column of ints. This is useful for
@@ -51,7 +65,7 @@ All the scripts have the usuals --help and -h flags, if you want more detailed i
   
     $ python intersect.py --files zone01.riz zone02.riz zone03.riz
   
-# 4) maching.py
+  # maching.py
   
   This program make a match of two files based on their R.A and DEC
   information. Usually, we want to add one field from one file that is
@@ -66,25 +80,20 @@ All the scripts have the usuals --help and -h flags, if you want more detailed i
     
     $ python matching.py --file=psf_cat_232382_1.fits --fileref=COADD_MOF.fits --fields 'CM_T' 'EXT_MOF' --d2d=0.0001 --filename=OUT.fit
   
-  After this run the file OUT.fit will have all the information than psf_cat_232382_1.fits and two additional fields 'CM_T' 'EXT_MOF.   
- However, all those rows where the two dimentional separation was higher thatn 1e-4 degree will return None, i.e, they are skipped.
+  After this run the file OUT.fit will have all the information than
+ psf_cat_232382_1.fits and two additional fields 'CM_T' 'EXT_MOF.
+ However, all those rows where the two dimentional separation was
+ higher thatn 1e-4 degree will return None, i.e, they are skipped.
  
   If the --filename is the same than the --file, it will be overwritten.
   
-# 5) readcatalog.py
-  Each catalogs demands its own version of reading the files, the folling script have 3 examples of how to read catalogs and plot the zone of the sky they cover (Each example are in the function read_alldata, read_alldata2 and read_alldata3).
+# 5) readcatalog.py Each catalogs demands its own version of reading
+  the files, the folling script have 3 examples of how to read
+  catalogs and plot the zone of the sky they cover (Each example are
+  in the function read_alldata, read_alldata2 and read_alldata3).
   
   HOW TO RUN
      
     $ python readcatalog.py --explist=../DESWL/psf/astro/all_zones.riz --fields 'ra' 'dec' --inpath=/home2/dfa/sobreira/alsina/catalogs/y3a1-v23/ --outname=yv23.png
 
  
- # 6) difference.py
-  This script substracts from one column some specific values that are in other. 
-
-  HOW TO RUN
-  
-     $ python difference.py --files allzones.riz zone02.riz zone03.riz
-  
-  In this example, it is substracted from allzones.riz the expousues in the files zone02.riz and zone03.riz
-    
