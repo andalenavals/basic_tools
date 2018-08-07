@@ -34,8 +34,8 @@ def read_somedata(catalogpath,  expolist):
 
     exps = load_explist(expolist)
     
-    names =  ['expnum', 'mean_obs_e1', 'mean_obs_e2',  'mean_obs_e', 'mean_piff_e1' ,'mean_piff_e2',  'mean_piff_e']
-    formats = ['i4', 'f4', 'f4', 'f4', 'f4', 'f4', 'f4' ]
+    names =  ['expnum', 'mean_obs_e1', 'mean_obs_e2',  'mean_obs_e', 'mean_obs_epw2','mean_piff_e1' ,'mean_piff_e2',  'mean_piff_e', 'mean_piff_e2', 'mean_de1',  'mean_de2']
+    formats = ['i4', 'f4', 'f4', 'f4', 'f4', 'f4', 'f4', 'f4','f4','f4','f4' ]
     dtype = dict(names = names, formats=formats)
     outdata = np.recarray((1, ), dtype=dtype)
     file_name = "mean_ellip_byexp.fits"
@@ -46,17 +46,22 @@ def read_somedata(catalogpath,  expolist):
             expname = os.path.join(indir, 'exp_psf_cat_%d.fits'%expnum)  
             expfile = fitsio.read(expname)
             data = expfile.astype(expfile.dtype.newbyteorder('='))
+            data =  data[data['piff_flag']==0]
            
             outdata['expnum'] = expnum
             outdata['mean_obs_e1'] = np.mean(data['obs_e1'])
             outdata['mean_obs_e2'] = np.mean(data['obs_e2'])
             outdata['mean_obs_e'] = np.mean(np.sqrt(data['obs_e1']**2+data['obs_e2']**2))
+            outdata['mean_obs_epw2'] = np.mean( data['obs_e1']**2+data['obs_e2']**2 )
             outdata['mean_piff_e1'] = np.mean(data['piff_e1'])
             outdata['mean_piff_e2'] = np.mean(data['piff_e2'])
             outdata['mean_piff_e'] = np.mean(np.sqrt(data['piff_e1']**2+data['piff_e2']**2))
+            outdata['mean_piff_epw2'] = np.mean(data['piff_e1']**2+data['piff_e2']**2 )
+            outdata['mean_de1'] = np.mean(data['obs_e1'] -  data['piff_e1'])
+            outdata['mean_de2'] = np.mean(data['obs_e2'] -  data['piff_e2'])
              
             #print(outdata)
-            write_fit(outdata,  file_name)
+            write_fit(outdata,  file_name) 
         except (OSError, IOError):
             print('Unable to open exp_psf_cat %s.  Skipping this file.'%expinfo)
 

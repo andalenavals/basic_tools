@@ -251,6 +251,7 @@ def plotScatter(data, field, xtitle, ytitle, outfile_name):
     pl.plot( datap[field] , datap['mrho2p'] , color='blue', marker= 'o',  markersize=1,  linewidth=0 )
     pl.plot( datan[field] , mdatan  , color='black', marker= 'o',  markersize=1,  linewidth=0 )
     pl.yscale('log')
+    pl.xscale('log')
     pl.xlabel(xtitle)
     pl.ylabel(ytitle)
     #pl.legend()
@@ -265,16 +266,28 @@ def main():
     import fitsio
     import numpy as np
     import pandas
-   
+
+    data = fitsio.read('rho2pbyexposure_ext.fits')
+    data = data.astype(data.dtype.newbyteorder('='))
+    columns =  ['mean_obs_e1', 'mean_obs_e2', 'mean_obs_e', 'mean_piff_e1', 'mean_piff_e2', 'mean_piff_e'  ]
+    units =  [' ',' ', ' ', ' ', ' ', ' ']
+
+    for field,  units in zip(columns, units):
+        plotScatter(data, field , field +' ' +  units, "rho2", "rho2_vs_" + field + '_scatter' +  ".pdf")
+
+
+    
+    ##APP
+    '''
     #data = fitsio.read('y3a1-v29_rho2byexposure_extended_final.fits')
     data = fitsio.read('y3a1-v29_rho2byzone_extended_final.fits')
     data = data.astype(data.dtype.newbyteorder('='))
 
-    '''
-    pzones = [6, 7, 8, 9, 10, 11, 12]
-    boo = [ (x not in pzones)for x in data['zonenum']]
-    data = data[boo]
-    '''
+
+    #pzones = [6, 7, 8, 9, 10, 11, 12]
+    #boo = [ (x not in pzones)for x in data['zonenum']]
+    #data = data[boo]
+    
     #data =  data[(data['zonenum']>=14)&(data['zonenum']<=14)]
     #df = pandas.DataFrame(data)
 
@@ -289,7 +302,7 @@ def main():
     for field,  units in zip(columns, units):
         plotTH1(data, field , 500, field + ' ' +  units, "#bar{#rho_{2}}", "rho2_vs_" + field + ".pdf")
         plotScatter(data, field , field +' ' +  units, "rho2", "rho2_vs_" + field + '_scatter' +  ".pdf")
-    
+    '''
         
     
     

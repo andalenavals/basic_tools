@@ -54,10 +54,10 @@ def main():
     
     
 
-    result = pandas.merge(df, ref_df, on='zonenum')
+    result = pandas.merge(df, ref_df, on='expnum')
 
 
-    write_fit(result.to_records(index=False), 'y3a1-v29_rho2byzone_extended_final.fits')
+    write_fit(result.to_records(index=False), 'rho2pbyexposure_ext.fits')
 
     
 
