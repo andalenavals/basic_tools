@@ -1,13 +1,22 @@
-from __future__ import print_function
-import os
-import sys
-import traceback
-import numpy as np
-import copy
-import glob
-import time
-import fitsio
-import pandas
+def parse_args():
+    import argparse
+    parser = argparse.ArgumentParser(description='A simple example program to merge or concat fits files')
+    
+    parser.add_argument('--file', default='',
+                        help='Fits image to extend, by default it looks for the first hdu')
+    parser.add_argument('--ref', default='',
+                        help='Fits with the additional information')
+    parser.add_argument('--merge', default=False, action='store_const', const=True,
+                        help='boolean to print the header of the hdu')
+    parser.add_argument('--concact', default=False, action='store_const', const=True,
+                        help='boolean to print the columns of the hdu')
+    parser.add_argument('--fields', nargs='+',  type=str, 
+                        help='Print only some columns, --fields string1 string2 string3 ... ')
+ 
+    args = parser.parse_args()
+
+    return args
+
 
 def write_fit(data, file_name):
     import fitsio
@@ -21,20 +30,34 @@ def write_fit(data, file_name):
         fits[-1].append(data)
 
 def main():
+    import fitsio
+    import pandas
 
+    args = parse_args()
     #Adding columns
-    rho_data = fitsio.read('y3a1-v29_rho2byexposure2_stars.fits')
-    rho_data = rho_data.astype(rho_data.dtype.newbyteorder('='))
-    rho_df = pandas.DataFrame(rho_data)
+
+    try:
+        data = fitsio.read(args.file)
+        data = data.astype(data.dtype.newbyteorder('='))
+        df = pandas.DataFrame(data)
+    except:
+        print('File could not be open!')
+        return None
+
+    try:
+        ref_data = fitsio.read(args.ref)
+        ref_data = ref_data.astype(ref_data.dtype.newbyteorder('='))
+        ref_df = pandas.DataFrame(ref_data)
+    except:
+        print('Reference File could not be open!')
+        return None
     
-    env_data = fitsio.read('Y3A1_atmos.fits')
-    env_data = env_data.astype(env_data.dtype.newbyteorder('='))
-    env_df = pandas.DataFrame(env_data)
+    
 
-    result = pandas.merge(rho_df, env_df, on='expnum')
+    result = pandas.merge(df, ref_df, on='zonenum')
 
 
-    write_fit(result.to_records(index=False), 'y3a1-v29_rho2byexposure2_extended_final.fits')
+    write_fit(result.to_records(index=False), 'y3a1-v29_rho2byzone_extended_final.fits')
 
     
 
