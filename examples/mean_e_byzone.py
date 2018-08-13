@@ -68,6 +68,7 @@ def getting_data(catalogpath,  expolist,  fields,  zonenum):
         try:
             expinfo = fitsio.read(os.path.join(indir, 'exp_psf_cat_%d.fits'%expnum))
             data = expinfo.astype(expinfo.dtype.newbyteorder('='))
+            data =  data[data['piff_flag']==0]
             for key in fields:
                 all_data[key].append(data[key])
         except (OSError, IOError):
