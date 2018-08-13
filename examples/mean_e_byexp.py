@@ -23,7 +23,18 @@ def load_explist(expfile):
         print('WARNING: Not exposure list')
     return exps
 
-def read_somedata(catalogpath,  expolist):
+def write_fit(data, file_name):
+    import fitsio
+    from fitsio import FITS,FITSHDR
+    import os.path
+    if not os.path.isfile(file_name):
+        fitsio.write(file_name,  data, clobber=False)
+    else:
+        fits = FITS(file_name,'rw')
+        fits[-1].append(data)
+
+
+def getting_somedata(catalogpath,  expolist):
     import fitsio
     import numpy as np
     import pandas
@@ -34,11 +45,11 @@ def read_somedata(catalogpath,  expolist):
 
     exps = load_explist(expolist)
     
-    names =  ['expnum', 'mean_obs_e1', 'mean_obs_e2',  'mean_obs_e', 'mean_obs_epw2','mean_piff_e1' ,'mean_piff_e2',  'mean_piff_e', 'mean_piff_e2', 'mean_de1',  'mean_de2']
-    formats = ['i4', 'f4', 'f4', 'f4', 'f4', 'f4', 'f4', 'f4','f4','f4','f4' ]
+    names =  ['expnum', 'mean_obs_e1', 'mean_obs_e2', 'mean_obs_e', 'mean_obs_epw2', 'mean_piff_e1','mean_piff_e2', 'mean_piff_e', 'mean_piff_epw2', 'mean_de1',  'mean_de2',  'mean_de', 'mean_depw2']
+    formats = ['i4', 'f4', 'f4', 'f4', 'f4', 'f4', 'f4', 'f4', 'f4','f4', 'f4', 'f4', 'f4' ]
     dtype = dict(names = names, formats=formats)
     outdata = np.recarray((1, ), dtype=dtype)
-    file_name = "mean_ellip_byexp.fits"
+    outfile_name = 'mean_ellip_byexp.fits'
     for exp in sorted(exps):
         expnum = int(exp)
         indir = os.path.join(inpath, exp)
@@ -59,27 +70,18 @@ def read_somedata(catalogpath,  expolist):
             outdata['mean_piff_epw2'] = np.mean(data['piff_e1']**2+data['piff_e2']**2 )
             outdata['mean_de1'] = np.mean(data['obs_e1'] -  data['piff_e1'])
             outdata['mean_de2'] = np.mean(data['obs_e2'] -  data['piff_e2'])
+            outdata['mean_de'] = np.mean( np.sqrt((data['obs_e1'] -  data['piff_e1'])**2 + (data['obs_e2'] -  data['piff_e2']) ** 2 ) )
+            outdata['mean_depw2'] = np.mean( (data['obs_e1'] -  data['piff_e1'])**2 + (data['obs_e2'] -  data['piff_e2']) ** 2 ) 
              
             #print(outdata)
-            write_fit(outdata,  file_name) 
+            write_fit(outdata,  outfile_name) 
         except (OSError, IOError):
             print('Unable to open exp_psf_cat %s.  Skipping this file.'%expinfo)
 
 
-def write_fit(data, file_name):
-    import fitsio
-    from fitsio import FITS,FITSHDR
-    import os.path
-    if not os.path.isfile(file_name):
-        fitsio.write(file_name,  data, clobber=False)
-    else:
-        fits = FITS(file_name,'rw')
-        fits[-1].append(data)
-
-
 def main():
     args=parse_args()
-    read_somedata(args.inpath,   args.explist)
+    getting_somedata(args.inpath,   args.explist)
   
 
     

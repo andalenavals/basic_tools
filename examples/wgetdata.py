@@ -21,9 +21,11 @@ def ps():
 def parse_args():
     import argparse
     parser = argparse.ArgumentParser(description='Wget data')
-    parser.add_argument('--outdir', default='outdir',
+    parser.add_argument('--outdir', default='wgetdataoutdir',
                         help='location of outputs')
-    parser.add_argument('--filexps', default='all_zones.riz',
+    parser.add_argument('--filexps', default='/home/dfa/sobreira/alsina/DESWL/psf/ally3.riz',
+                        help='list of exposures (in lieu of separate exps)')
+    parser.add_argument('--erinfile', default='/home/dfa/sobreira/alsina/DESWL/psf/exposures-ccds-Y3A1_COADD.fits',
                         help='list of exposures (in lieu of separate exps)')
     args = parser.parse_args()
     return args
@@ -155,6 +157,7 @@ def write_fit(data, file_name):
             print(e)
             pass
  
+#Getting data from particular ccd
 def GetData1(args):
     wdir = os.path.expanduser(args.outdir)
     print('work dir = ',wdir)
@@ -167,7 +170,7 @@ def GetData1(args):
         pass
 
     url_base = 'https://rmjarvis:%s@desar2.cosmology.illinois.edu/DESFiles/desarchive/'%ps()
-    all_exp = fitsio.read('exposures-ccds-Y3A1_COADD.fits')
+    all_exp = fitsio.read(args.erinfile)
     all_exp = all_exp.astype(all_exp.dtype.newbyteorder('='))
    
     if args.filexps != '':
@@ -220,6 +223,7 @@ def GetData1(args):
         
     print('\nFinished processing all exposures')
 
+#Getting all the data
 def GetData2(args):
     wdir = os.path.expanduser(args.outdir)
     print('work dir = ',wdir)
@@ -232,7 +236,7 @@ def GetData2(args):
         pass
 
     url_base = 'https://rmjarvis:%s@desar2.cosmology.illinois.edu/DESFiles/desarchive/'%ps()
-    all_exp = fitsio.read('exposures-ccds-Y3A1_COADD.fits')
+    all_exp = fitsio.read(args.erinfile)
     all_exp = all_exp.astype(all_exp.dtype.newbyteorder('='))
    
     if args.filexps != '':
