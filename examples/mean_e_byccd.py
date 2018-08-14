@@ -15,9 +15,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Run rho stats on a set of exposures')
 
     # Drectory arguments
-    parser.add_argument('--inpath', default='/astro/u/mjarvis/work/y3_piff',
+    parser.add_argument('--inpath', default='/home2/dfa/sobreira/alsina/catalogs/y3a1-v29/',
                         help='location of work directory')
-    parser.add_argument('--explist', default='',
+    parser.add_argument('--explist', default='/home/dfa/sobreira/alsina/DESWL/psf/ally3.riz',
                         help='list of exposures (in lieu of separate exps)')
 
     args = parser.parse_args()
@@ -82,8 +82,8 @@ def getting_data(catalogpath,  expolist,  fields,  ccdnum):
     #print(all_data_final['obs_e1'])
         
 #Adding line by line
-    names =  ['ccdnum', 'mean_obs_e1', 'mean_obs_e2', 'mean_obs_e', 'mean_obs_epw2', 'mean_piff_e1','mean_piff_e2', 'mean_piff_e', 'mean_piff_epw2', 'mean_de1',  'mean_de2']
-    formats = ['i4', 'f4', 'f4', 'f4', 'f4', 'f4', 'f4', 'f4', 'f4','f4', 'f4' ]
+    names =  ['ccdnum', 'mean_obs_e1', 'mean_obs_e2', 'mean_obs_e', 'mean_obs_epw2', 'mean_piff_e1','mean_piff_e2', 'mean_piff_e', 'mean_piff_epw2', 'mean_de1',  'mean_de2', 'mean_de',  'mean_depw2']
+    formats = ['i4', 'f4', 'f4', 'f4', 'f4', 'f4', 'f4', 'f4', 'f4','f4', 'f4','f4',  'f4' ]
     dtype = dict(names = names, formats=formats)
     outdata = np.recarray((1, ), dtype=dtype)
     outfile_name = 'mean_ellip_byccd.fits'
@@ -100,6 +100,8 @@ def getting_data(catalogpath,  expolist,  fields,  ccdnum):
     outdata['mean_piff_epw2'] = np.mean(all_data_final['piff_e1']**2+all_data_final['piff_e2']**2 )
     outdata['mean_de1'] = np.mean(all_data_final['obs_e1'] -  all_data_final['piff_e1'])
     outdata['mean_de2'] = np.mean(all_data_final['obs_e2'] -  all_data_final['piff_e2'])
+    outdata['mean_de'] = np.mean( np.sqrt((all_data_final['obs_e1'] -  all_data_final['piff_e1'])**2 + (all_data_final['obs_e2'] -  all_data_final['piff_e2']) ** 2 ) )
+    outdata['mean_depw2'] = np.mean( (all_data_final['obs_e1'] -  all_data_final['piff_e1'])**2 + (all_data_final['obs_e2'] -  all_data_final['piff_e2']) ** 2 ) 
     
     #print(outdata)
     write_fit(outdata,  outfile_name) 
@@ -109,7 +111,7 @@ def main():
 
     args = parse_args()
     fields = [ 'obs_e1',  'obs_e2',  'piff_e1',  'piff_e2']
-    for k in range(39, 63):
+    for k in range(1, 63):
         getting_data(args.inpath, args.explist,  fields,  int(k))
 
     '''

@@ -82,8 +82,8 @@ def getting_data(catalogpath,  expolist,  fields,  zonenum):
     #print(all_data_final['obs_e1'])
         
 #Adding line by line
-    names =  ['zonenum', 'mean_obs_e1', 'mean_obs_e2', 'mean_obs_e', 'mean_obs_epw2', 'mean_piff_e1','mean_piff_e2', 'mean_piff_e', 'mean_piff_epw2', 'mean_de1',  'mean_de2']
-    formats = ['i4', 'f4', 'f4', 'f4', 'f4', 'f4', 'f4', 'f4', 'f4','f4', 'f4' ]
+    names =  ['zonenum', 'mean_obs_e1', 'mean_obs_e2', 'mean_obs_e', 'mean_obs_epw2', 'mean_piff_e1','mean_piff_e2', 'mean_piff_e', 'mean_piff_epw2', 'mean_de1',  'mean_de2', 'mean_de', 'mean_depw2' ]
+    formats = ['i4', 'f4', 'f4', 'f4', 'f4', 'f4', 'f4', 'f4', 'f4','f4', 'f4', 'f4',  'f4' ]
     dtype = dict(names = names, formats=formats)
     outdata = np.recarray((1, ), dtype=dtype)
     outfile_name = 'mean_ellip_byzone.fits'
@@ -100,6 +100,8 @@ def getting_data(catalogpath,  expolist,  fields,  zonenum):
     outdata['mean_piff_epw2'] = np.mean(all_data_final['piff_e1']**2+all_data_final['piff_e2']**2 )
     outdata['mean_de1'] = np.mean(all_data_final['obs_e1'] -  all_data_final['piff_e1'])
     outdata['mean_de2'] = np.mean(all_data_final['obs_e2'] -  all_data_final['piff_e2'])
+    outdata['mean_de'] = np.mean( np.sqrt((all_data_final['obs_e1'] -  all_data_final['piff_e1'])**2 + (all_data_final['obs_e2'] -  all_data_final['piff_e2']) ** 2 ) )
+    outdata['mean_depw2'] = np.mean( (all_data_final['obs_e1'] -  all_data_final['piff_e1'])**2 + (all_data_final['obs_e2'] -  all_data_final['piff_e2']) ** 2 ) 
     
     print(outdata)
     write_fit(outdata,  outfile_name) 

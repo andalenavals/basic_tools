@@ -5,7 +5,7 @@ def parse_args():
     
     parser.add_argument('--explist', default='',
                         help='txt list with the number identifier of the exposure')
-    parser.add_argument('--inpath', default='',
+    parser.add_argument('--inpath', default='/home2/dfa/sobreira/alsina/catalogs/y3a1-v29/',
                         help='Place where input catalogs is, it is assumed that each expousure have a folder')
 
     args = parser.parse_args()

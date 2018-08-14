@@ -49,7 +49,11 @@ def main():
             print('File could not be open!')
             return None
         try:
-            ref_data = fitsio.read(args.ref)
+            if(args.fields):
+                args.fields.append(args.on)
+                ref_data = fitsio.read(args.ref,  columns=args.fields)
+            else:
+                ref_data = fitsio.read(args.ref)
             ref_data = ref_data.astype(ref_data.dtype.newbyteorder('='))
             ref_df = pandas.DataFrame(ref_data)
         except:
