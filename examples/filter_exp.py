@@ -47,7 +47,7 @@ def filter_data(filefilter,   expolist):
         try:
             expfile = fitsio.read(filefilter)
             data = expfile.astype(expfile.dtype.newbyteorder('='))
-            flag =  (data['mean_obs_e']<0.08)&(data['expnum'] == expnum)
+            flag =  (data['mean_obs_e']<0.06)&(data['expnum'] == expnum)
             data =  data[flag]
             if len(data) > 0:
                 print(data['expnum'][0])
