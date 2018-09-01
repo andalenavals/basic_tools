@@ -10,7 +10,7 @@ import sys
 def parse_args():
     import argparse
     
-    parser = argparse.ArgumentParser(description='Run PSFEx on a set of runs/exposures')
+    parser = argparse.ArgumentParser(description='Create the fits of rho2 byzones, basically it reads all the .json outputs an calculates the mean rho2')
 
     # Drectory arguments
     parser.add_argument('--inpath', default='/home2/dfa/sobreira/alsina/catalogs/output/y3a1-v29/byexp/',

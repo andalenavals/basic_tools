@@ -31,7 +31,8 @@ def write_fit(data, file_name):
 
 def parse_args():
     import argparse
-    parser = argparse.ArgumentParser(description='Check if information in a fit file is compatible with what we expect')
+    parser = argparse.ArgumentParser(description='This program read the extrafield (diferent from rho) from the fits
+at the level of exposures and take the avarage or the sum to produce the extrafield ate level of zones')
     parser.add_argument('--file', default='',
                         help='Fit file to check')
     args = parser.parse_args()

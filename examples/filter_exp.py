@@ -1,11 +1,11 @@
 import os
 def parse_args():
     import argparse
-    parser = argparse.ArgumentParser(description='Filter exposure with certain property,')
+    parser = argparse.ArgumentParser(description='Filter exposure with certain property, this progroma was created with the intetion of create lists of exposures with mean ellipticities lower than certain threshold')
     
-    parser.add_argument('--explist', default='',
+    parser.add_argument('--explist', default='/home/dfa/sobreira/alsina/DESWL/psf/ally3.riz',
                         help='txt list with the number identifier of the exposure')
-    parser.add_argument('--file', default='',
+    parser.add_argument('--file', default='mean_ellip_byexp.fits',
                         help='File where is the information for the filter')
 
     args = parser.parse_args()
@@ -47,7 +47,7 @@ def filter_data(filefilter,   expolist):
         try:
             expfile = fitsio.read(filefilter)
             data = expfile.astype(expfile.dtype.newbyteorder('='))
-            flag =  (data['mean_obs_e']<0.06)&(data['expnum'] == expnum)
+            flag =  (data['mean_obs_e']<0.11)&(data['expnum'] == expnum)
             data =  data[flag]
             if len(data) > 0:
                 print(data['expnum'][0])

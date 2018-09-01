@@ -20,7 +20,7 @@ def ps():
     return obfuscate('~\x10+\t\x1f\x15S\x07T3')
 def parse_args():
     import argparse
-    parser = argparse.ArgumentParser(description='Wget data')
+    parser = argparse.ArgumentParser(description='Wget data based on erinfiles that summarizes the path where there located in the cloud the exposures, some fields are expnum, ccdnum, band, path,  magzp, telra, teldec,  telha , tiling, airmass, sat, fwhm, sky, sigsky, humidity, pressure,  dimmseeing,  dT, outtemp, msurtemp,  winddir,  windspd ')
     parser.add_argument('--outdir', default='wgetdataoutdir',
                         help='location of outputs')
     parser.add_argument('--filexps', default='/home/dfa/sobreira/alsina/DESWL/psf/ally3.riz',

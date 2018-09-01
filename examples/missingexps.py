@@ -35,14 +35,13 @@ def main():
     for exp in exps:
         exp = int(exp)
        
-        print(data[[data['expnum']==exp]]['msurtemp'][0] )
+        #print(data[[data['expnum']==exp]]['msurtemp'][0] )
        
-        '''
         if(df[df['expnum'] == exp]['expnum'].count() == 0):
             print('Exposure',  exp ,  'Is mising')
         elif (df[df['expnum'] == exp]['expnum'].count() > 1):
             print('Exposure',  exp ,  'Is repeated')
-        '''
+        
 
         
         

@@ -1,7 +1,7 @@
 import os
 def parse_args():
     import argparse
-    parser = argparse.ArgumentParser(description='Read catalog program, it is assume a structure of the catalog. First the expousurelist is a column of numbers. Second each expousure have a folder. Third each folder of each expousure have a exp_info_%d.fits, which have the ccd numbers,')
+    parser = argparse.ArgumentParser(description='Create a catalog at the level of exposures, with differnt defition of the observed and piff ellipticities and residuals')
     
     parser.add_argument('--explist', default='',
                         help='txt list with the number identifier of the exposure')

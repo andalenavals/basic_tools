@@ -12,7 +12,7 @@ from read_psf_cats_andres import read_data
 def parse_args():
     import argparse
 
-    parser = argparse.ArgumentParser(description='Run rho stats on a set of exposures')
+    parser = argparse.ArgumentParser(description='Create a catalog at the level of ccd, with differnt defition of the observed and piff ellipticities and residuals')
 
     # Drectory arguments
     parser.add_argument('--inpath', default='/home2/dfa/sobreira/alsina/catalogs/y3a1-v29/',

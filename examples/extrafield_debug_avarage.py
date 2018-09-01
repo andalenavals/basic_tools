@@ -31,7 +31,7 @@ def write_fit(data, file_name):
 
 def parse_args():
     import argparse
-    parser = argparse.ArgumentParser(description='Check if information in a fit file is compatible with what we expect')
+    parser = argparse.ArgumentParser(description='Because the way how I am getting wget data I do not includ bad measurements particularly bad ccds and tilling. So this script willl correct it')
     parser.add_argument('--file', default='',
                         help='Fit file to check')
     parser.add_argument('--explist', default='/data/git_repositories/basic_tools/all_zones.riz',
