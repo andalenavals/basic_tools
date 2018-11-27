@@ -9,7 +9,7 @@ def parse_args():
                         help='lists of txt files with the number of exposure to analyse')
     parser.add_argument('--fields', nargs='+',  type=str, 
                         help='list of fields you want to read from the catalog')
-    parser.add_argument('--inpath', default='',
+    parser.add_argument('--inpath', default='/home2/dfa/sobreira/alsina/catalogs/y3_master/Y3_mastercat_v2_6_20_18_subsampled.h5',
                         help='Place where input catalogs is, it is assumed that each expousure have a folder')
     parser.add_argument('--outname', default='', type=str, 
                         help='Name of the output image example zone01.png')
@@ -213,6 +213,31 @@ def read_somedata2(catalogpath,  expolist):
     print('Finished reading data')
     write_fit(data,  file_name)
 
+def read_h5(filename):
+    import h5py as h
+    import numpy as np
+    f = h.File(filename, 'r')
+    print(f.keys())
+
+    index =  f['index']
+    print('Folders inside index', index.keys())
+    select = index['select']
+    select_1p = index['select_1p']
+    select_1m = index['select_1m']
+    sel = np.array(select)
+    sel1m = np.array(select_1p)
+    sel1p = np.array(select_1m)
+    #print(len(sel))
+ 
+    catalog =  f['catalog']
+    print('Master catalog folders', catalog.keys())
+    metacal =  catalog['metacal']
+    print('Metacal catalog folders',metacal.keys())
+    unsheared =  metacal['unsheared']
+    print('Unsheared Metacal catalog fields',unsheared.keys())
+    sheared_1m =  metacal['sheared_1m']
+    print('Sheared_1m Metacal catalog fields',sheared_1m.keys())
+
 def wsc_range(data):
     import numpy as np
     ra_min =  np.min(data['ra'])
@@ -370,9 +395,12 @@ def main():
     from os.path import basename
     args = parse_args()
 
+    read_h5(args.inpath)
+    
+    
     #APP
-    data =  read_alldata2(args.inpath, args.explist,  args.fields)
-    plotRaDec(data,  'exposure.png')
+    #data =  read_alldata2(args.inpath, args.explist,  args.fields)
+    #plotRaDec(data,  'exposure.png')
 
     #APP
     #read_somedata2(args.inpath,   args.explist)
