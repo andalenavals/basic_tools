@@ -1,11 +1,16 @@
 def parse_args():
     import argparse
-    parser = argparse.ArgumentParser(description='A simple example program to merge or concat fits files')
+    parser = argparse.ArgumentParser(description='A simple example program to merge or concat fits files. Or create new hdu from different files')
     
     parser.add_argument('--file', default='',
-                        help='Fits image to extend, by default it looks for the first hdu')
+                        help='Fits image to extend, by default it looks for the first hdu. Reciver')
     parser.add_argument('--ref', default='',
-                        help='Fits with the additional information')
+                        help='Fits with the additional information. Donor')
+    parser.add_argument('--hdu', type=int, 
+                        help='hdu of the donor ')
+    parser.add_argument('--hduconcat', default=False,
+                        action='store_const', const=True,
+                        help='boolean to active the concatenation of hdu mode')
     parser.add_argument('--merge', default=False, action='store_const', const=True,
                         help='boolean to merge files')
     parser.add_argument('--on', default='expnum', type=str, 
@@ -31,8 +36,28 @@ def write_fit(data, file_name):
         fitsio.write(file_name,  data, clobber=False)
     else:
         fits = FITS(file_name,'rw')
+        #appending data to the las hdu
         fits[-1].append(data)
 
+def concathdu(receptorfitname, donorfitname,  hdunum):
+    import fitsio
+    from fitsio import FITS,FITSHDR
+    from astropy.io import fits
+    try:
+        donorfit =  fits.open(donorfitname)
+    except:
+        print('File', donorfitname, 'could not be open!')
+        return None
+    try:
+        receptorfit =  fits.open(receptorfitname)
+    except:
+        print('File', receptorfitname, 'could not be open!')
+        return None
+    print(receptorfit)
+    receptorfit.insert(1, donorfit[hdunum])
+    #receptorfit.append(donorfit[hdunum])
+    receptorfit.writeto(receptorfitname, clobber=True)
+ 
 def main():
     import fitsio
     import pandas
@@ -80,6 +105,11 @@ def main():
 
     else:
         print("Extension unespecified!!: Neither --merge, nor --concat flags were defined. ")
+
+    if(args.hduconcat):
+        concathdu(args.file, args.ref,  args.hdu)
+    else:
+        print('Mode of concatenation or mixturing of hdu unactivated.')
 
 if __name__ == "__main__":
     main()
