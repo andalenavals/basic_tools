@@ -26,7 +26,6 @@ def parse_args():
 
     return args
 
-
 def write_fit(data, file_name):
     import fitsio
     from fitsio import FITS,FITSHDR
@@ -43,20 +42,23 @@ def concathdu(receptorfitname, donorfitname,  hdunum):
     import fitsio
     from fitsio import FITS,FITSHDR
     from astropy.io import fits
+    import os.path
     try:
         donorfit =  fits.open(donorfitname)
     except:
         print('File', donorfitname, 'could not be open!')
         return None
-    try:
-        receptorfit =  fits.open(receptorfitname)
-    except:
+   
+    if not os.path.isfile(receptorfitname):
         print('File', receptorfitname, 'could not be open!')
-        return None
-    print(receptorfit)
-    receptorfit.insert(1, donorfit[hdunum])
-    #receptorfit.append(donorfit[hdunum])
-    receptorfit.writeto(receptorfitname, clobber=True)
+        donorfit[hdunum].writeto(receptorfitname)
+        print('creating', receptorfitname, 'file!')
+    else:
+        receptorfit =  fits.open(receptorfitname)
+        
+        #receptorfit.insert(1, donorfit[hdunum]) #add hdu in the top
+        receptorfit.append(donorfit[hdunum]) #add hdu to the bootom
+        receptorfit.writeto(receptorfitname, clobber=True)
  
 def main():
     import fitsio
