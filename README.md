@@ -65,7 +65,7 @@ you want more detailed information.
   
     $ python intersect.py --files zone01.riz zone02.riz zone03.riz
   
-  # maching.py
+  # matching.py
   
   This program make a match of two files based on their R.A and DEC
   information. Usually, we want to add one field from one file that is
