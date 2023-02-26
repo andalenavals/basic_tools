@@ -8,7 +8,7 @@ import glob
 import time
 import fitsio
 import pandas
-import galsim
+
 
 def obfuscate(s):
     mask = 'I Have a Dream'
@@ -23,9 +23,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Wget data based on erinfiles that summarizes the path where there located in the cloud the exposures, some fields are expnum, ccdnum, band, path,  magzp, telra, teldec,  telha , tiling, airmass, sat, fwhm, sky, sigsky, humidity, pressure,  dimmseeing,  dT, outtemp, msurtemp,  winddir,  windspd ')
     parser.add_argument('--outdir', default='wgetdataoutdir',
                         help='location of outputs')
-    parser.add_argument('--filexps', default='/home/dfa/sobreira/alsina/DESWL/psf/ally3.riz',
+    parser.add_argument('--filexps', default='../ally3.riz',
                         help='list of exposures (in lieu of separate exps)')
-    parser.add_argument('--erinfile', default='/home/dfa/sobreira/alsina/DESWL/psf/exposures-ccds-Y3A1_COADD.fits',
+    parser.add_argument('--erinfile', default='../exposures-ccds-Y3A1_COADD.fits',
                         help='list of exposures (in lieu of separate exps)')
     args = parser.parse_args()
     return args
@@ -40,6 +40,7 @@ def remove_temp_files(wdir, root):
         os.remove(f)
     #print('   Done')
 def read_image_header(row, img_file):
+    import galsim
     """Read some information from the image header and write into the df row.
     """
     hdu = 1
@@ -126,7 +127,7 @@ def wget(url_base, path, wdir, file):
         # Maybe from too many requests at once or something.  So we retry up to 5 times.
         nattempts = 5
         for attempt in range(1,nattempts+1):
-            #print('wget %s  (attempt %d)'%(url, attempt))
+            print('wget %s  (attempt %d)'%(url, attempt))
             try:
                 wget.download(url, bar=None, out=full_file)
             except KeyboardInterrupt:
@@ -181,13 +182,16 @@ def GetData1(args):
 
     #exps = sorted(exps)
 
-    for exp in exps:
-    #for exp in [229360, 229362]:
+    #for exp in exps:
+    for exp in [229360, 229362]:
         exp = int(exp)
         #print(exp)
         data = all_exp[all_exp['expnum'] == exp]
-        #print(data)
+        #print(data) This line is just because we are interested in
+        #the quantities at the level of exposure, so grossly any ccd
+        #have that enverimental quantity not changes assumed among ccds
         data =  data[data['ccdnum']==28]
+        #save in mem only particular columns of erisn file
         exp_df = pandas.DataFrame(data,  columns=['expnum', 'ccdnum', 'band',  'path',  'magzp'])
 
         # Add some blank columns to be filled in below.
@@ -198,6 +202,7 @@ def GetData1(args):
         
         try:
             row = pandas.Series(exp_df.iloc[0])
+            
         except:
             print("Unxpected error from exp:",  exp)
             print(sys.exc_info()[0])
@@ -266,10 +271,11 @@ def GetData2(args):
                 base_path, _, _, image_file_name = path.rsplit('/',3)
                 root, ext = image_file_name.rsplit('_',1)
                 #print('root, ext = |%s| |%s|'%(root,ext))
+                print("Place where file is being looked", url_base + path+ '/red/immask/' + root + '_' + ext)
                 image_file = wget(url_base, base_path + '/red/immask/', wdir, root + '_' + ext)
                 #print('image_file = ',image_file)
                 read_image_header(row, image_file)
-                remove_temp_files(wdir,  root)
+                #remove_temp_files(wdir,  root)
                 exp_df.iloc[k] = row
                 
             except:

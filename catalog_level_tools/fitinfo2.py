@@ -63,9 +63,10 @@ def main():
         try:
             data = fitsio.read(args.file, ext=nhdu)
             data = data.astype(data.dtype.newbyteorder('='))
-            df = pandas.DataFrame( data)
+            df = pandas.DataFrame(data=data)
         except:
             print ('The',  type(hdu[nhdu]),'of the HDU',nhdu,   'is not readable')
+            raise
         if not (args.rows):
             print(df)
         else:
