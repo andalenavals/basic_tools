@@ -2,13 +2,23 @@ REDUCE=[True,False][0]
 RUNSEX=[True,False][0]
 RUNSCAMP=[True,False][0]
 RUNSWARP=[True,False][0]
+BACK,SEG=[False,False]
 
-PATH="/data/PhD/observation/crab_nebula_processed"
-FILTER="LUM"
+#PATH="/data/PhD/observation/crab_nebula_processed"
+#RA='05h34m33s'
+#DEC='+22d00m52.7s'
+PATH="/data/PhD/observation/owl_nebula_processed"
+#RA='11h14m47.724s'
+#DEC='+55d01m8.672s'
+RA='11h14m47.715s'
+DEC='+55d01m8.682s'
+
+#FILTER="LUM"
+#FILTER="HA"
+#FILTER="G"
+FILTER="B"
 
 from astropy.coordinates import SkyCoord
-RA='05h34m33s'
-DEC='+22d00m52.7s'
 coord = SkyCoord(ra=RA, dec=DEC, frame='icrs')
 npix_x=3072
 npix_y=2048
@@ -32,22 +42,24 @@ def parse_args():
                         help='Fits image to read')
     parser.add_argument('--masterdark', default='%s/masterdark.fit'%(PATH),
                         help='Fits image to read')
-    parser.add_argument('--masterflat', default='%s/masterflat_%s.fit'%(PATH,FILTER),
+    parser.add_argument('--masterflat',
+                        #default='%s/masterflat_%s.fit'%(PATH,"G"),#%(PATH,FILTER),
+                        default='%s/masterflat_%s.fit'%(PATH,FILTER),
                         help='Fits image to read')
     parser.add_argument('--outfolder', default='%s/SCIENCE_RED/%s'%(PATH,FILTER),
                         help='Fits image to read')
     parser.add_argument('--sex_args',
                         default='/data/git_repositories/basic_tools/image_level_tools/sexconf/sexconf.yaml',
-                        help='yaml config define sextractor inputfiles')
+                        help='yaml config define sextractor inputfiles, sex_config, sex_params, sex_filter, sex_nnw')
     parser.add_argument('--scamp_args',
                         default='/data/git_repositories/basic_tools/image_level_tools/scampconf/scamp.conf',
-                        help='yaml config define sextractor inputfiles')
+                        help='yaml config define scamp inputfiles, scamp_bin, scamp_config, globar_header')
     parser.add_argument('--scamp_global_header',
                         default='/data/git_repositories/basic_tools/image_level_tools/scampconf/configs/default2.ahead',
-                        help='yaml config define sextractor inputfiles')
+                        help='yaml config define scamp global config')
     parser.add_argument('--swarp_args',
                         default='/data/git_repositories/basic_tools/image_level_tools/swarpconf/swarp.conf',
-                        help='yaml config define sextractor inputfiles')
+                        help='yaml config define swarp inputfiles swarp_bin, swarp_config')
     args = parser.parse_args()
 
     return args
@@ -99,13 +111,16 @@ def main():
             outfilename=os.path.join(args.outfolder, os.path.basename(f))
             write_data(s_proc, outfilename )
         if RUNSEX:
-            sexcatname=os.path.join(args.outfolder, os.path.basename(f).replace(".fit", ".cat"))
-            chekcatname=os.path.join(args.outfolder, os.path.basename(f).replace(".fit","_back.fit"))
-            sexargs.update({"check_file":chekcatname, "check_type":"BACKGROUND"})
+            if BACK:
+                chekcatname=os.path.join(args.outfolder, os.path.basename(f).replace(".fit","_back.fit"))
+                sexargs.update({"check_file":chekcatname, "check_type":"BACKGROUND"})
             #chekcatname=os.path.join(args.outfolder, os.path.basename(f).replace(".fit","rms.weight.fit"))
             #sexargs.update({"check_file":chekcatname, "check_type":"MINIBACK_RMS"})
-            #chekcatname=os.path.join(args.outfolder, os.path.basename(f).replace(".fit", "_seg.fit"))
-            #sexargs.update({"check_file":chekcatname, "check_type":"SEGMENTATION"})
+            if SEG:
+                chekcatname=os.path.join(args.outfolder, os.path.basename(f).replace(".fit", "_seg.fit"))
+                sexargs.update({"check_file":chekcatname, "check_type":"SEGMENTATION"})
+                
+            sexcatname=os.path.join(args.outfolder, os.path.basename(f).replace(".fit", ".cat"))
             run_sex(outfilename, sexcatname,  **sexargs)
 
     if RUNSCAMP:
@@ -117,13 +132,14 @@ def main():
         run_scamp(cats_string, **scampargs)
 
     if RUNSWARP:
-        index=[0,1] #list(range(len(files))) #[0,2]
+        #index=[0,1] #list(range(len(files))) #[0,2]
+        index=list(range(len(files)))
         reducedfiles=np.array(sorted(glob.glob(os.path.join(args.outfolder, "*.fit"))))[index]
         redfiles_string=" ".join(reducedfiles)
         imgout_name= os.path.join(PATH, "median_%s.fit"%(FILTER))
         wout_name= os.path.join(PATH, "median_%s_weight.fit"%(FILTER))
         center="%s,%s"%(RA.replace("h", ":").replace("m", ":").replace("s", ""), DEC.replace("d", ":").replace("m", ":").replace("s", ""))
-        img_size="1500,1500"
+        img_size="3500,3500"
         swarpargs.update({"imgout_name":imgout_name, "wout_name":wout_name,"center":center, "img_size":img_size})
         run_swarp(redfiles_string, **swarpargs )
 

@@ -1,5 +1,6 @@
-PATH="/data/PhD/observation/crab_nebula_processed"
-FILTER="R"
+#PATH="/data/PhD/observation/crab_nebula_processed"
+PATH="/data/PhD/observation/owl_nebula_processed"
+FILTER="LUM"
 
 def parse_args():
     import argparse

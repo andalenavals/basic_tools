@@ -8,6 +8,22 @@ import astropy.io.fits as fits
 import logging
 logger = logging.getLogger(__name__)
 
+def bin_ndarray(ndarray, new_shape, operation='sum'):
+    operation = operation.lower()
+    if not operation in ['sum', 'mean']:
+        raise ValueError("Operation not supported.")
+    if ndarray.ndim != len(new_shape):
+        raise ValueError("Shape mismatch: {} -> {}".format(ndarray.shape,
+                                                           new_shape))
+    compression_pairs = [(d, c//d) for d,c in zip(new_shape,
+                                                  ndarray.shape)]
+    flattened = [l for p in compression_pairs for l in p]
+    ndarray = ndarray.reshape(flattened)
+    for i in range(len(new_shape)):
+        op = getattr(ndarray, operation)
+        ndarray = op(-1*(i+1))
+    return ndarray
+
 def plot_image(image): # remove directory and channel_list
     import astropy.visualization as vis
     fig = plt.figure(1)
@@ -110,8 +126,9 @@ def run_scamp(cat_file, scamp_bin=None, scamp_config=None, global_header=None):
         scamp_bin=scamp_bin, cat_file=cat_file, config=scamp_config,global_header=global_header )
     
     print("FULL CMD COMMAND: %s"%(cmd))
-    res=subprocess.run(shlex.split(cmd))#, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    #res = subprocess.run(shlex.split(cmd), text=True, capture_output=False)
+    #res=subprocess.run(shlex.split(cmd))#, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    res = subprocess.run(shlex.split(cmd), text=True, capture_output=False)
+    print(res)
     assert res.returncode ==0
 
         
